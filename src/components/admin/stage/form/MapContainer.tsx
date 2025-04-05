@@ -16,7 +16,7 @@ const MapContainer = ({
   startPosition,
   finishPosition,
   mapZoomLevel,
-  timingPoints,
+  timingPoints = [], // Provide a default empty array
   handleStartPositionSelect,
   handleFinishPositionSelect,
 }: MapContainerProps) => {
