@@ -1,7 +1,7 @@
 
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Eye } from "lucide-react";
 import { RallyStage, getStatusBadgeClass, getStatusLabel } from "@/schemas/stageSchema";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,9 +36,10 @@ interface StageListProps {
   isLoading: boolean;
   onEdit: (stage: RallyStage) => void;
   onDelete: (id: string) => void;
+  onView?: (stage: RallyStage) => void;
 }
 
-const StageList = ({ stages, isLoading, onEdit, onDelete }: StageListProps) => {
+const StageList = ({ stages, isLoading, onEdit, onDelete, onView }: StageListProps) => {
   const formatDateTime = (dateTimeString: string | null) => {
     if (!dateTimeString) return "Non définie";
     return format(new Date(dateTimeString), "dd/MM/yyyy HH:mm", { locale: fr });
@@ -97,6 +98,15 @@ const StageList = ({ stages, isLoading, onEdit, onDelete }: StageListProps) => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
+                    {onView && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onView(stage)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"

@@ -98,10 +98,15 @@ export type Database = {
           created_at: string
           description: string | null
           distance: number
+          finish_latitude: number | null
+          finish_longitude: number | null
           id: string
           location: string
+          map_zoom_level: number | null
           name: string
           rally_id: string
+          start_latitude: number | null
+          start_longitude: number | null
           start_time: string | null
           status: string
           updated_at: string
@@ -110,10 +115,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           distance: number
+          finish_latitude?: number | null
+          finish_longitude?: number | null
           id?: string
           location: string
+          map_zoom_level?: number | null
           name: string
           rally_id: string
+          start_latitude?: number | null
+          start_longitude?: number | null
           start_time?: string | null
           status?: string
           updated_at?: string
@@ -122,10 +132,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           distance?: number
+          finish_latitude?: number | null
+          finish_longitude?: number | null
           id?: string
           location?: string
+          map_zoom_level?: number | null
           name?: string
           rally_id?: string
+          start_latitude?: number | null
+          start_longitude?: number | null
           start_time?: string | null
           status?: string
           updated_at?: string
@@ -263,6 +278,53 @@ export type Database = {
             columns: ["registration_id"]
             isOneToOne: false
             referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timing_points: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          order_index: number
+          point_type: string
+          stage_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          order_index: number
+          point_type: string
+          stage_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          order_index?: number
+          point_type?: string
+          stage_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timing_points_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "rally_stages"
             referencedColumns: ["id"]
           },
         ]

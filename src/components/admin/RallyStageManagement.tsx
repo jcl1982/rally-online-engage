@@ -6,6 +6,7 @@ import { RallyStage, StageFormValues } from "@/schemas/stageSchema";
 import { useRallyStages } from "@/hooks/useRallyStages";
 import StageList from "./stage/StageList";
 import StageForm from "./stage/StageForm";
+import StageDetailsPage from "./stage/StageDetailsPage";
 
 interface RallyStageManagementProps {
   rallyId: string;
@@ -16,6 +17,7 @@ const RallyStageManagement = ({ rallyId }: RallyStageManagementProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<RallyStage | null>(null);
+  const [viewingStageId, setViewingStageId] = useState<string | null>(null);
 
   const handleAddStage = async (values: StageFormValues) => {
     const success = await addStage(values);
@@ -37,6 +39,18 @@ const RallyStageManagement = ({ rallyId }: RallyStageManagementProps) => {
     setSelectedStage(stage);
     setIsEditDialogOpen(true);
   };
+
+  const handleViewStageDetails = (stage: RallyStage) => {
+    setViewingStageId(stage.id);
+  };
+
+  const handleBackToList = () => {
+    setViewingStageId(null);
+  };
+
+  if (viewingStageId) {
+    return <StageDetailsPage stageId={viewingStageId} rallyId={rallyId} />;
+  }
 
   return (
     <div className="space-y-4">
@@ -61,6 +75,7 @@ const RallyStageManagement = ({ rallyId }: RallyStageManagementProps) => {
         isLoading={isLoading}
         onEdit={handleOpenEditDialog}
         onDelete={deleteStage}
+        onView={handleViewStageDetails}
       />
 
       <StageForm
