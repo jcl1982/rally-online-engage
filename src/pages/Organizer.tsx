@@ -6,16 +6,7 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { Button } from "@/components/ui/button";
 import { LogOut, ChevronLeft, Flag, Users, Award, CalendarClock } from "lucide-react";
-import { StageManagement } from "@/components/organizer/StageManagement";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import { StageManager } from "@/components/organizer/stage/StageManager";
 import { Card } from "@/components/ui/card";
 
 const Organizer = () => {
@@ -35,7 +26,7 @@ const Organizer = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "stages":
-        return <StageManagement />;
+        return <StageManager />;
       case "participants":
         return (
           <div className="bg-white p-6 rounded-lg shadow">
@@ -91,7 +82,7 @@ const Organizer = () => {
           </div>
         );
       default:
-        return <StageManagement />;
+        return <StageManager />;
     }
   };
 
