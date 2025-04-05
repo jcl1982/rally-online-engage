@@ -10,6 +10,7 @@ import { StageForm } from "./StageForm";
 
 export interface Stage {
   id: string;
+  rally_id: string;
   name: string;
   location: string;
   description?: string;
@@ -25,6 +26,26 @@ export const StageManagement = () => {
   const [isAddingStage, setIsAddingStage] = useState(false);
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
   const queryClient = useQueryClient();
+
+  // Récupération d'un ID de rallye par défaut pour tester
+  // Dans une application complète, ce serait récupéré à partir de l'URL ou d'un contexte
+  const { data: defaultRally } = useQuery({
+    queryKey: ["default-rally"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rallies")
+        .select("id")
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Erreur lors de la récupération du rallye par défaut:", error);
+        return { id: null };
+      }
+
+      return data;
+    },
+  });
 
   // Récupération des épreuves
   const { data: stages, isLoading } = useQuery({
@@ -93,6 +114,7 @@ export const StageManagement = () => {
           <StageForm 
             initialData={editingStage || undefined}
             onClose={handleCloseForm}
+            defaultRallyId={defaultRally?.id || ""}
           />
         </Card>
       )}

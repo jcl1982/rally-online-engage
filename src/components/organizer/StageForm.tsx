@@ -33,9 +33,10 @@ type StageFormValues = z.infer<typeof stageSchema>;
 interface StageFormProps {
   initialData?: Stage;
   onClose: () => void;
+  defaultRallyId: string;
 }
 
-export const StageForm = ({ initialData, onClose }: StageFormProps) => {
+export const StageForm = ({ initialData, onClose, defaultRallyId }: StageFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
   const isEditMode = !!initialData;
@@ -62,9 +63,13 @@ export const StageForm = ({ initialData, onClose }: StageFormProps) => {
         if (error) throw error;
         return { ...values, id: initialData.id };
       } else {
+        // Ajout du rally_id qui est requis par la table rally_stages
         const { data, error } = await supabase
           .from("rally_stages")
-          .insert(values)
+          .insert({
+            ...values,
+            rally_id: defaultRallyId // Utilisation du rallyId passé en prop
+          })
           .select()
           .single();
         
@@ -85,6 +90,11 @@ export const StageForm = ({ initialData, onClose }: StageFormProps) => {
   });
 
   const onSubmit = async (values: StageFormValues) => {
+    if (!defaultRallyId && !isEditMode) {
+      toast.error("Aucun rallye sélectionné. Impossible d'ajouter l'épreuve.");
+      return;
+    }
+    
     setIsSubmitting(true);
     saveStageMutation.mutate(values);
   };
@@ -192,7 +202,7 @@ export const StageForm = ({ initialData, onClose }: StageFormProps) => {
           <Button 
             type="submit" 
             className="bg-rally-red hover:bg-red-700"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (!defaultRallyId && !isEditMode)}
           >
             {isSubmitting ? "Enregistrement..." : isEditMode ? "Modifier" : "Ajouter"}
           </Button>
