@@ -26,6 +26,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             
             {/* Routes protégées qui nécessitent l'authentification */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/registration" element={<div className="p-10">Page d'engagement en cours de développement</div>} />
+            </Route>
+            
             <Route element={<ProtectedRoute requireOrganizer={true} />}>
               <Route path="/admin" element={<Admin />} />
               <Route path="/organizer" element={<Organizer />} />

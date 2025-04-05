@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -45,7 +44,6 @@ const Index = () => {
     navigate("/admin");
   };
   
-  // Add the onStartRegistration function to handle registration
   const handleStartRegistration = () => {
     if (user) {
       navigate("/registration");
@@ -61,7 +59,6 @@ const Index = () => {
       <main className="flex-grow">
         <HeroSection onStartRegistration={handleStartRegistration} />
 
-        {/* Section pour les utilisateurs authentifiés avec rôle */}
         {user && (
           <section className="bg-white py-12">
             <div className="container mx-auto px-4">
