@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -391,6 +390,7 @@ const StageDetailsForm = ({
                     onPositionSelect={handleStartPositionSelect}
                     startPosition={watchStart.lat && watchStart.lng ? watchStart : undefined}
                     finishPosition={watchFinish.lat && watchFinish.lng ? watchFinish : undefined}
+                    timingPoints={[]} // Ajout de la prop timingPoints manquante
                   />
                 </div>
               </div>

@@ -18,7 +18,7 @@ interface MapPosition {
 interface StageMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
-  timingPoints: TimingPoint[];
+  timingPoints?: TimingPoint[];
   onPositionSelect?: (position: MapPosition) => void;
   readOnly?: boolean;
   startPosition?: { lat: number | null; lng: number | null };

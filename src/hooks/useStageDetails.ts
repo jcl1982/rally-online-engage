@@ -43,18 +43,17 @@ export const useStageDetails = (stageId: string) => {
 
   const fetchTimingPoints = async () => {
     try {
+      // Utiliser la méthode rpc pour contourner les problèmes de typage
       const { data, error } = await supabase
-        .from("timing_points")
-        .select("*")
-        .eq("stage_id", stageId)
-        .order("order_index", { ascending: true });
+        .rpc('get_timing_points', { stage_id_param: stageId });
 
       if (error) throw error;
       
-      setTimingPoints(data as TimingPoint[]);
+      setTimingPoints(data as unknown as TimingPoint[]);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des points de chronométrage:", error);
       toast.error("Impossible de charger les points de chronométrage");
+      setTimingPoints([]);
     }
   };
 
@@ -91,17 +90,16 @@ export const useStageDetails = (stageId: string) => {
 
   const addTimingPoint = async (values: TimingPointFormValues) => {
     try {
-      const { error } = await supabase.from("timing_points").insert([
-        {
-          stage_id: stageId,
-          name: values.name,
-          description: values.description,
-          latitude: values.latitude,
-          longitude: values.longitude,
-          point_type: values.point_type,
-          order_index: values.order_index,
-        },
-      ]);
+      // Utiliser la méthode rpc pour contourner les problèmes de typage
+      const { error } = await supabase.rpc('add_timing_point', {
+        p_stage_id: stageId,
+        p_name: values.name,
+        p_description: values.description || '',
+        p_latitude: values.latitude,
+        p_longitude: values.longitude,
+        p_point_type: values.point_type,
+        p_order_index: values.order_index
+      });
 
       if (error) throw error;
 
@@ -117,17 +115,16 @@ export const useStageDetails = (stageId: string) => {
 
   const updateTimingPoint = async (id: string, values: TimingPointFormValues) => {
     try {
-      const { error } = await supabase
-        .from("timing_points")
-        .update({
-          name: values.name,
-          description: values.description,
-          latitude: values.latitude,
-          longitude: values.longitude,
-          point_type: values.point_type,
-          order_index: values.order_index,
-        })
-        .eq("id", id);
+      // Utiliser la méthode rpc pour contourner les problèmes de typage
+      const { error } = await supabase.rpc('update_timing_point', {
+        p_id: id,
+        p_name: values.name,
+        p_description: values.description || '',
+        p_latitude: values.latitude,
+        p_longitude: values.longitude,
+        p_point_type: values.point_type,
+        p_order_index: values.order_index
+      });
 
       if (error) throw error;
 
@@ -143,7 +140,8 @@ export const useStageDetails = (stageId: string) => {
 
   const deleteTimingPoint = async (id: string) => {
     try {
-      const { error } = await supabase.from("timing_points").delete().eq("id", id);
+      // Utiliser la méthode rpc pour contourner les problèmes de typage
+      const { error } = await supabase.rpc('delete_timing_point', { p_id: id });
 
       if (error) throw error;
 
