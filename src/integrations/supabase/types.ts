@@ -391,7 +391,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_timing_point: {
+        Args: {
+          p_stage_id: string
+          p_name: string
+          p_description: string
+          p_latitude: number
+          p_longitude: number
+          p_point_type: string
+          p_order_index: number
+        }
+        Returns: string
+      }
+      delete_timing_point: {
+        Args: {
+          p_id: string
+        }
+        Returns: boolean
+      }
+      get_timing_points: {
+        Args: {
+          stage_id_param: string
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          order_index: number
+          point_type: string
+          stage_id: string
+          updated_at: string
+        }[]
+      }
+      update_timing_point: {
+        Args: {
+          p_id: string
+          p_name: string
+          p_description: string
+          p_latitude: number
+          p_longitude: number
+          p_point_type: string
+          p_order_index: number
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

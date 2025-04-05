@@ -7,7 +7,7 @@ interface MapContainerProps {
   startPosition?: { lat: number | null; lng: number | null };
   finishPosition?: { lat: number | null; lng: number | null };
   mapZoomLevel: number;
-  timingPoints: TimingPoint[];
+  timingPoints?: TimingPoint[];
   handleStartPositionSelect: (position: { latitude: number; longitude: number }) => void;
   handleFinishPositionSelect: (position: { latitude: number; longitude: number }) => void;
 }
@@ -16,7 +16,7 @@ const MapContainer = ({
   startPosition,
   finishPosition,
   mapZoomLevel,
-  timingPoints = [], // Provide a default empty array
+  timingPoints = [], // Fournir un tableau vide par défaut
   handleStartPositionSelect,
   handleFinishPositionSelect,
 }: MapContainerProps) => {

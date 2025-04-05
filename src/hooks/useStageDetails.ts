@@ -43,13 +43,13 @@ export const useStageDetails = (stageId: string) => {
 
   const fetchTimingPoints = async () => {
     try {
-      // Utiliser la méthode rpc pour contourner les problèmes de typage
+      // Utiliser la fonction RPC pour récupérer les points de chronométrage
       const { data, error } = await supabase
         .rpc('get_timing_points', { stage_id_param: stageId });
 
       if (error) throw error;
       
-      setTimingPoints(data as unknown as TimingPoint[]);
+      setTimingPoints(data as TimingPoint[]);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des points de chronométrage:", error);
       toast.error("Impossible de charger les points de chronométrage");
@@ -90,8 +90,8 @@ export const useStageDetails = (stageId: string) => {
 
   const addTimingPoint = async (values: TimingPointFormValues) => {
     try {
-      // Utiliser la méthode rpc pour contourner les problèmes de typage
-      const { error } = await supabase.rpc('add_timing_point', {
+      // Utiliser la fonction RPC pour ajouter un point de chronométrage
+      const { data, error } = await supabase.rpc('add_timing_point', {
         p_stage_id: stageId,
         p_name: values.name,
         p_description: values.description || '',
@@ -115,8 +115,8 @@ export const useStageDetails = (stageId: string) => {
 
   const updateTimingPoint = async (id: string, values: TimingPointFormValues) => {
     try {
-      // Utiliser la méthode rpc pour contourner les problèmes de typage
-      const { error } = await supabase.rpc('update_timing_point', {
+      // Utiliser la fonction RPC pour mettre à jour un point de chronométrage
+      const { data, error } = await supabase.rpc('update_timing_point', {
         p_id: id,
         p_name: values.name,
         p_description: values.description || '',
@@ -140,7 +140,7 @@ export const useStageDetails = (stageId: string) => {
 
   const deleteTimingPoint = async (id: string) => {
     try {
-      // Utiliser la méthode rpc pour contourner les problèmes de typage
+      // Utiliser la fonction RPC pour supprimer un point de chronométrage
       const { error } = await supabase.rpc('delete_timing_point', { p_id: id });
 
       if (error) throw error;
