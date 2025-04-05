@@ -9,7 +9,321 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          blood_type: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          license_category: string | null
+          license_number: string | null
+          phone: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          blood_type?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          license_category?: string | null
+          license_number?: string | null
+          phone?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          blood_type?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          license_category?: string | null
+          license_number?: string | null
+          phone?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rallies: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          location: string
+          name: string
+          registration_deadline: string | null
+          registration_open: boolean
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          location: string
+          name: string
+          registration_deadline?: string | null
+          registration_open?: boolean
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          location?: string
+          name?: string
+          registration_deadline?: string | null
+          registration_open?: boolean
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rally_stages: {
+        Row: {
+          created_at: string
+          description: string | null
+          distance: number
+          id: string
+          location: string
+          name: string
+          rally_id: string
+          start_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          distance: number
+          id?: string
+          location: string
+          name: string
+          rally_id: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          distance?: number
+          id?: string
+          location?: string
+          name?: string
+          rally_id?: string
+          start_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rally_stages_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "rallies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registrations: {
+        Row: {
+          co_driver_id: string | null
+          created_at: string
+          driver_id: string
+          id: string
+          rally_id: string
+          status: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          co_driver_id?: string | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          rally_id: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          co_driver_id?: string | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          rally_id?: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "rallies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_equipment: {
+        Row: {
+          belts_brand: string
+          belts_expiration_date: string
+          co_driver_helmet_brand: string
+          co_driver_helmet_expiration_date: string
+          co_driver_helmet_model: string
+          co_driver_suit_brand: string
+          co_driver_suit_expiration_date: string
+          created_at: string
+          driver_helmet_brand: string
+          driver_helmet_expiration_date: string
+          driver_helmet_model: string
+          driver_suit_brand: string
+          driver_suit_expiration_date: string
+          has_extinguisher: boolean
+          has_fia_hans: boolean
+          has_first_aid_kit: boolean
+          has_tow_rope: boolean
+          has_warning_triangle: boolean
+          id: string
+          registration_id: string
+          seats_brand: string
+          seats_expiration_date: string
+          updated_at: string
+        }
+        Insert: {
+          belts_brand: string
+          belts_expiration_date: string
+          co_driver_helmet_brand: string
+          co_driver_helmet_expiration_date: string
+          co_driver_helmet_model: string
+          co_driver_suit_brand: string
+          co_driver_suit_expiration_date: string
+          created_at?: string
+          driver_helmet_brand: string
+          driver_helmet_expiration_date: string
+          driver_helmet_model: string
+          driver_suit_brand: string
+          driver_suit_expiration_date: string
+          has_extinguisher?: boolean
+          has_fia_hans?: boolean
+          has_first_aid_kit?: boolean
+          has_tow_rope?: boolean
+          has_warning_triangle?: boolean
+          id?: string
+          registration_id: string
+          seats_brand: string
+          seats_expiration_date: string
+          updated_at?: string
+        }
+        Update: {
+          belts_brand?: string
+          belts_expiration_date?: string
+          co_driver_helmet_brand?: string
+          co_driver_helmet_expiration_date?: string
+          co_driver_helmet_model?: string
+          co_driver_suit_brand?: string
+          co_driver_suit_expiration_date?: string
+          created_at?: string
+          driver_helmet_brand?: string
+          driver_helmet_expiration_date?: string
+          driver_helmet_model?: string
+          driver_suit_brand?: string
+          driver_suit_expiration_date?: string
+          has_extinguisher?: boolean
+          has_fia_hans?: boolean
+          has_first_aid_kit?: boolean
+          has_tow_rope?: boolean
+          has_warning_triangle?: boolean
+          id?: string
+          registration_id?: string
+          seats_brand?: string
+          seats_expiration_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_equipment_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          category: string
+          chassis_number: string
+          class: string
+          created_at: string
+          engine_capacity: string
+          engine_number: string
+          group_class: string
+          homologation_number: string
+          id: string
+          make: string
+          model: string
+          owner_id: string
+          registration_number: string
+          technical_passport_number: string
+          updated_at: string
+          year: string
+        }
+        Insert: {
+          category: string
+          chassis_number: string
+          class: string
+          created_at?: string
+          engine_capacity: string
+          engine_number: string
+          group_class: string
+          homologation_number: string
+          id?: string
+          make: string
+          model: string
+          owner_id: string
+          registration_number: string
+          technical_passport_number: string
+          updated_at?: string
+          year: string
+        }
+        Update: {
+          category?: string
+          chassis_number?: string
+          class?: string
+          created_at?: string
+          engine_capacity?: string
+          engine_number?: string
+          group_class?: string
+          homologation_number?: string
+          id?: string
+          make?: string
+          model?: string
+          owner_id?: string
+          registration_number?: string
+          technical_passport_number?: string
+          updated_at?: string
+          year?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
