@@ -1,6 +1,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface HeroSectionProps {
   onStartRegistration: () => void;
@@ -52,9 +53,11 @@ const HeroSection = ({ onStartRegistration }: HeroSectionProps) => {
             <Button 
               onClick={onStartRegistration}
               size="lg" 
-              className="bg-rally-red hover:bg-red-700 text-white"
+              className="bg-rally-red hover:bg-red-700 text-white flex items-center gap-2"
+              type="button"
             >
               Commencer mon engagement
+              <ArrowRight size={18} />
             </Button>
           </motion.div>
         </div>

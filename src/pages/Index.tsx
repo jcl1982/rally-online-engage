@@ -45,11 +45,14 @@ const Index = () => {
   };
   
   const handleStartRegistration = () => {
+    console.log("Registration button clicked");
     if (user) {
+      console.log("User is logged in, navigating to registration");
       navigate("/registration");
     } else {
-      navigate("/auth", { state: { from: "/registration" } });
+      console.log("User is not logged in, navigating to auth");
       toast("Veuillez vous connecter pour commencer votre engagement");
+      navigate("/auth", { state: { from: "/registration" } });
     }
   };
 
