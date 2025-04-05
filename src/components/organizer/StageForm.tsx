@@ -64,12 +64,20 @@ export const StageForm = ({ initialData, onClose, defaultRallyId }: StageFormPro
         return { ...values, id: initialData.id };
       } else {
         // Ajout du rally_id qui est requis par la table rally_stages
+        // Assurer que tous les champs nécessaires sont inclus
+        const stageData = {
+          ...values,
+          rally_id: defaultRallyId,
+          // S'assurer que ces champs sont toujours bien définis et non optionnels
+          name: values.name,
+          location: values.location, 
+          distance: values.distance,
+          status: values.status,
+        };
+        
         const { data, error } = await supabase
           .from("rally_stages")
-          .insert({
-            ...values,
-            rally_id: defaultRallyId // Utilisation du rallyId passé en prop
-          })
+          .insert(stageData)
           .select()
           .single();
         
