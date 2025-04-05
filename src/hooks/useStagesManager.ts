@@ -5,6 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Stage } from "@/hooks/useStageForm";
 import { toast } from "sonner";
 
+interface StageFormData {
+  name: string;
+  location: string;
+  distance: string;
+  description?: string;
+}
+
 export const useStagesManager = () => {
   const [currentStage, setCurrentStage] = useState<Stage | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,7 +37,7 @@ export const useStagesManager = () => {
 
   // Ajout d'une épreuve
   const addStageMutation = useMutation({
-    mutationFn: async (stageData) => {
+    mutationFn: async (stageData: StageFormData) => {
       // Utiliser le premier rallye disponible dans la base de données
       const { data: rallyData, error: rallyError } = await supabase
         .from("rallies")
@@ -40,14 +47,21 @@ export const useStagesManager = () => {
 
       if (rallyError) throw rallyError;
 
-      const { error } = await supabase
+      // Conversion du champ distance en nombre
+      const preparedData = {
+        ...stageData,
+        rally_id: rallyData.id,
+        distance: Number(stageData.distance)
+      };
+
+      const { data, error } = await supabase
         .from("rally_stages")
-        .insert({
-          ...stageData,
-          rally_id: rallyData.id,
-        });
+        .insert(preparedData)
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stages"] });
@@ -62,13 +76,20 @@ export const useStagesManager = () => {
 
   // Mise à jour d'une épreuve
   const updateStageMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
+    mutationFn: async ({ id, data }: { id: string; data: StageFormData }) => {
+      // Conversion du champ distance en nombre
+      const preparedData = {
+        ...data,
+        distance: Number(data.distance)
+      };
+
       const { error } = await supabase
         .from("rally_stages")
-        .update(data)
+        .update(preparedData)
         .eq("id", id);
 
       if (error) throw error;
+      return { id, data: preparedData };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stages"] });
@@ -84,13 +105,14 @@ export const useStagesManager = () => {
 
   // Suppression d'une épreuve
   const deleteStageMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("rally_stages")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stages"] });
@@ -117,7 +139,7 @@ export const useStagesManager = () => {
     setCurrentStage(null);
   };
 
-  const handleSubmit = (data) => {
+  const handleSubmit = (data: StageFormData) => {
     if (currentStage) {
       updateStageMutation.mutate({ id: currentStage.id, data });
     } else {

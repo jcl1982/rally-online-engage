@@ -5,6 +5,7 @@ import { PlusCircle } from "lucide-react";
 import { StageTable } from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
+import { Stage } from '@/hooks/useStageForm';
 
 export const StageManager: React.FC = () => {
   const {
@@ -41,7 +42,7 @@ export const StageManager: React.FC = () => {
         isOpen={modalOpen}
         onClose={closeModal}
         onSubmit={handleSubmit}
-        initialData={currentStage || undefined}
+        initialData={currentStage}
         title={currentStage ? "Modifier l'épreuve" : "Ajouter une nouvelle épreuve"}
       />
     </div>

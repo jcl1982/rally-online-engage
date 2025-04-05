@@ -29,19 +29,32 @@ export const useStageForm = ({ initialData, defaultRallyId, onClose }: UseStageF
 
   const saveStageMutation = useMutation({
     mutationFn: async (values: StageFormValues) => {
-      if (isEditMode) {
+      if (isEditMode && initialData) {
+        // Ensure all required fields are present
+        const updatedValues = {
+          name: values.name,
+          location: values.location,
+          description: values.description || null,
+          distance: Number(values.distance),
+          status: values.status
+        };
+        
         const { error } = await supabase
           .from("rally_stages")
-          .update(values)
+          .update(updatedValues)
           .eq("id", initialData.id);
         
         if (error) throw error;
-        return { ...values, id: initialData.id };
+        return { ...updatedValues, id: initialData.id };
       } else {
         // Ajout du rally_id qui est requis par la table rally_stages
         const stageData = {
-          ...values,
           rally_id: defaultRallyId,
+          name: values.name,
+          location: values.location,
+          description: values.description || null,
+          distance: Number(values.distance),
+          status: values.status
         };
         
         const { data, error } = await supabase

@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Stage } from "@/hooks/useStageForm";
 
 // Schéma de validation pour une épreuve
 const stageSchema = z.object({
@@ -31,7 +32,7 @@ interface StageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: StageFormData) => void;
-  initialData?: StageFormData;
+  initialData?: Stage | null;
   title: string;
 }
 
@@ -49,7 +50,12 @@ export const StageModal: React.FC<StageModalProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<StageFormData>({
     resolver: zodResolver(stageSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      name: initialData.name,
+      distance: String(initialData.distance),
+      description: initialData.description || "",
+      location: initialData.location,
+    } : {
       name: "",
       distance: "",
       description: "",
@@ -59,8 +65,22 @@ export const StageModal: React.FC<StageModalProps> = ({
 
   // Reset form when initialData changes
   useEffect(() => {
-    if (isOpen && initialData) {
-      reset(initialData);
+    if (isOpen) {
+      if (initialData) {
+        reset({
+          name: initialData.name,
+          distance: String(initialData.distance),
+          description: initialData.description || "",
+          location: initialData.location,
+        });
+      } else {
+        reset({
+          name: "",
+          distance: "",
+          description: "",
+          location: "",
+        });
+      }
     }
   }, [initialData, isOpen, reset]);
 

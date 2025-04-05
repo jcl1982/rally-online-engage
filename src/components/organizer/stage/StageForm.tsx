@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { stageSchema } from "@/schemas/organizerStageSchema";
-import { Stage } from "@/hooks/useStageForm";
+import { Stage, useStageForm } from "@/hooks/useStageForm";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
