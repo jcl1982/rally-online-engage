@@ -6,21 +6,8 @@ import { PlusCircle, Edit, Trash2, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { StageForm } from "./StageForm";
-
-export interface Stage {
-  id: string;
-  rally_id: string;
-  name: string;
-  location: string;
-  description?: string;
-  distance: number;
-  status: string;
-  start_latitude?: number | null;
-  start_longitude?: number | null;
-  finish_latitude?: number | null;
-  finish_longitude?: number | null;
-}
+import { StageForm } from "./stage/StageForm";
+import { Stage } from "@/hooks/useStageForm";
 
 export const StageManagement = () => {
   const [isAddingStage, setIsAddingStage] = useState(false);
