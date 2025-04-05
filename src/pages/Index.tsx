@@ -44,12 +44,22 @@ const Index = () => {
   const handleAdminAccess = () => {
     navigate("/admin");
   };
+  
+  // Add the onStartRegistration function to handle registration
+  const handleStartRegistration = () => {
+    if (user) {
+      navigate("/registration");
+    } else {
+      navigate("/auth", { state: { from: "/registration" } });
+      toast("Veuillez vous connecter pour commencer votre engagement");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
       <main className="flex-grow">
-        <HeroSection />
+        <HeroSection onStartRegistration={handleStartRegistration} />
 
         {/* Section pour les utilisateurs authentifiés avec rôle */}
         {user && (
