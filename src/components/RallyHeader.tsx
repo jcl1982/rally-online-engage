@@ -1,7 +1,14 @@
 
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const RallyHeader = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  
   return (
     <motion.header 
       className="py-6 bg-rally-black text-white mb-8"
@@ -21,9 +28,31 @@ const RallyHeader = () => {
             <span className="hidden md:inline text-sm border-l-2 border-rally-red pl-4 py-1">
               Simplifiez votre engagement en rallye
             </span>
+            {user ? (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-rally-red text-white hover:bg-rally-red"
+                onClick={signOut}
+              >
+                Déconnexion
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-rally-red text-white hover:bg-rally-red"
+                onClick={() => navigate("/auth")}
+              >
+                <LogIn size={16} className="mr-2" />
+                Connexion
+              </Button>
+            )}
           </div>
         </div>
       </div>
+      
+      <div className="hidden md:block absolute right-0 bottom-0 w-1/4 h-2 bg-rally-red"></div>
     </motion.header>
   );
 };
