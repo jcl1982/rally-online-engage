@@ -1,11 +1,13 @@
 
+import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { stageSchema } from "@/schemas/organizerStageSchema";
+import { Stage } from "@/hooks/useStageForm";
+
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { stageSchema, StageFormValues } from "@/schemas/organizerStageSchema";
-import StageFormFields from "./StageFormFields";
-import { useStageForm, Stage } from "@/hooks/useStageForm";
+import { StageFormFields } from "./StageFormFields";
 
 interface StageFormProps {
   initialData?: Stage;
@@ -13,50 +15,56 @@ interface StageFormProps {
   defaultRallyId: string;
 }
 
-export const StageForm = ({ initialData, onClose, defaultRallyId }: StageFormProps) => {
+export const StageForm: React.FC<StageFormProps> = ({
+  initialData,
+  onClose,
+  defaultRallyId,
+}) => {
   const { isSubmitting, isEditMode, handleSubmit } = useStageForm({
     initialData,
     defaultRallyId,
-    onClose
+    onClose,
   });
 
-  const form = useForm<StageFormValues>({
+  const form = useForm({
     resolver: zodResolver(stageSchema),
     defaultValues: {
       name: initialData?.name || "",
       location: initialData?.location || "",
       description: initialData?.description || "",
       distance: initialData?.distance || 0,
-      status: (initialData?.status as "planned" | "active" | "completed") || "planned",
+      status: initialData?.status || "planned",
     },
   });
 
+  const onSubmit = (values) => {
+    handleSubmit(values);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="mb-4">
-          <h3 className="font-semibold text-lg">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">
             {isEditMode ? "Modifier l'épreuve" : "Ajouter une épreuve"}
           </h3>
-        </div>
-
-        <StageFormFields control={form.control} />
-
-        <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
+        </div>
+
+        <StageFormFields form={form} />
+
+        <div className="flex justify-end">
           <Button 
             type="submit" 
             className="bg-rally-red hover:bg-red-700"
-            disabled={isSubmitting || (!defaultRallyId && !isEditMode)}
+            disabled={isSubmitting}
           >
-            {isSubmitting ? "Enregistrement..." : isEditMode ? "Modifier" : "Ajouter"}
+            {isSubmitting ? "Enregistrement..." : isEditMode ? "Mettre à jour" : "Ajouter"}
           </Button>
         </div>
       </form>
     </Form>
   );
 };
-
-export default StageForm;

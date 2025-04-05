@@ -13,10 +13,7 @@ export interface Stage {
   description?: string;
   distance: number;
   status: string;
-  start_latitude?: number | null;
-  start_longitude?: number | null;
-  finish_latitude?: number | null;
-  finish_longitude?: number | null;
+  start_time?: string | null;
 }
 
 interface UseStageFormProps {
@@ -42,15 +39,9 @@ export const useStageForm = ({ initialData, defaultRallyId, onClose }: UseStageF
         return { ...values, id: initialData.id };
       } else {
         // Ajout du rally_id qui est requis par la table rally_stages
-        // Assurer que tous les champs nécessaires sont inclus
         const stageData = {
           ...values,
           rally_id: defaultRallyId,
-          // S'assurer que ces champs sont toujours bien définis et non optionnels
-          name: values.name,
-          location: values.location, 
-          distance: values.distance,
-          status: values.status,
         };
         
         const { data, error } = await supabase
