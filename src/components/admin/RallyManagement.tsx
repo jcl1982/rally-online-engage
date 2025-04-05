@@ -9,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +44,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -65,6 +65,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const rallyStatusEnum = z.enum(["upcoming", "active", "completed", "cancelled"]);
+type RallyStatus = z.infer<typeof rallyStatusEnum>;
+
 const rallySchema = z.object({
   name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),
   location: z.string().min(3, "La localisation doit contenir au moins 3 caractères"),
@@ -77,13 +80,21 @@ const rallySchema = z.object({
   }),
   registration_open: z.boolean().default(false),
   registration_deadline: z.date().optional(),
-  status: z.enum(["upcoming", "active", "completed", "cancelled"]).default("upcoming"),
+  status: rallyStatusEnum.default("upcoming"),
 });
 
 type RallyFormValues = z.infer<typeof rallySchema>;
 
-interface Rally extends RallyFormValues {
+interface Rally {
   id: string;
+  name: string;
+  location: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  registration_open: boolean;
+  registration_deadline: string | null;
+  status: RallyStatus;
   created_at: string;
   updated_at: string;
 }
@@ -155,13 +166,29 @@ const RallyManagement = ({ onRallySelect }: RallyManagementProps) => {
         .order("start_date", { ascending: false });
 
       if (error) throw error;
-      setRallies(data);
+      
+      // Vérifie que le status correspond bien au type attendu
+      const typedData = data.map(rally => ({
+        ...rally,
+        status: validateRallyStatus(rally.status)
+      })) as Rally[];
+      
+      setRallies(typedData);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des rallyes:", error);
       toast.error("Impossible de charger les rallyes");
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Fonction pour valider que le statut est conforme à notre enum
+  const validateRallyStatus = (status: string): RallyStatus => {
+    if (status === "upcoming" || status === "active" || 
+        status === "completed" || status === "cancelled") {
+      return status;
+    }
+    return "upcoming"; // Valeur par défaut
   };
 
   const onSubmit = async (values: RallyFormValues) => {

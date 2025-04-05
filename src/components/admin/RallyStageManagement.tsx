@@ -56,22 +56,29 @@ import { fr } from "date-fns/locale";
 import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
+const stageStatusEnum = z.enum(["planned", "completed", "cancelled"]);
+type StageStatus = z.infer<typeof stageStatusEnum>;
+
 const stageSchema = z.object({
   name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),
   location: z.string().min(3, "La localisation doit contenir au moins 3 caractères"),
   distance: z.coerce.number().min(0.1, "La distance doit être supérieure à 0"),
   description: z.string().optional(),
   start_time: z.string().optional(),
-  status: z.enum(["planned", "completed", "cancelled"]).default("planned"),
+  status: stageStatusEnum.default("planned"),
 });
 
 type StageFormValues = z.infer<typeof stageSchema>;
 
-interface RallyStage extends Omit<StageFormValues, 'distance' | 'start_time'> {
+interface RallyStage {
   id: string;
   rally_id: string;
+  name: string;
+  location: string;
+  description: string | null;
   distance: number;
   start_time: string | null;
+  status: StageStatus;
   created_at: string;
   updated_at: string;
 }
@@ -161,13 +168,28 @@ const RallyStageManagement = ({ rallyId }: RallyStageManagementProps) => {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      setStages(data);
+      
+      // Vérifie que le status correspond bien au type attendu
+      const typedData = data.map(stage => ({
+        ...stage,
+        status: validateStageStatus(stage.status)
+      })) as RallyStage[];
+      
+      setStages(typedData);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des épreuves:", error);
       toast.error("Impossible de charger les épreuves");
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Fonction pour valider que le statut est conforme à notre enum
+  const validateStageStatus = (status: string): StageStatus => {
+    if (status === "planned" || status === "completed" || status === "cancelled") {
+      return status;
+    }
+    return "planned"; // Valeur par défaut
   };
 
   const onSubmit = async (values: StageFormValues) => {
