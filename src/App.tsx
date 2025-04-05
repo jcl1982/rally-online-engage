@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import Organizer from "./pages/Organizer";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             {/* Routes protégées qui nécessitent l'authentification */}
             <Route element={<ProtectedRoute requireOrganizer={true} />}>
               <Route path="/admin" element={<Admin />} />
+              <Route path="/organizer" element={<Organizer />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -6,7 +6,7 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut } from "lucide-react";
+import { LogOut, Flag } from "lucide-react";
 import RallyManagement from "@/components/admin/RallyManagement";
 import RallyStageManagement from "@/components/admin/RallyStageManagement";
 
@@ -28,21 +28,34 @@ const Admin = () => {
     }
   };
 
+  const navigateToOrganizer = () => {
+    navigate("/organizer");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <RallyHeader />
       <div className="flex-grow container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Espace Organisateur</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Espace Administrateur</h1>
             <p className="text-gray-600">
               Bienvenue, {profile?.first_name || profile?.email}
             </p>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
-            <LogOut size={16} />
-            Déconnexion
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={navigateToOrganizer} 
+              className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+            >
+              <Flag size={16} />
+              Gérer les Épreuves
+            </Button>
+            <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
+              <LogOut size={16} />
+              Déconnexion
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
