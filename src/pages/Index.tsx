@@ -31,8 +31,10 @@ const Index = () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from("upcoming_rallies")
+          .from("rallies") // Utiliser la table rallies au lieu de upcoming_rallies
           .select("id, name, location, start_date, end_date")
+          .eq("is_upcoming", true) // Filtrer pour obtenir uniquement les rallyes à venir
+          .order("start_date", { ascending: true })
           .limit(3);
 
         if (error) {
