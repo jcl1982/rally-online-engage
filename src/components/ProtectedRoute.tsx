@@ -23,6 +23,7 @@ const ProtectedRoute = ({ requireOrganizer = false }: ProtectedRouteProps) => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Vérifie si l'utilisateur est un organisateur quand c'est requis
   if (requireOrganizer && profile?.role !== 'organizer' && profile?.role !== 'admin') {
     toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
     return <Navigate to="/" replace />;
