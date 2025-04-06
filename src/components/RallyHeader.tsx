@@ -2,12 +2,12 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { LogIn } from "lucide-react";
+import { LogIn, Users, Flag } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const RallyHeader = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isOrganizer } = useAuth();
   
   return (
     <motion.header 
@@ -19,7 +19,7 @@ const RallyHeader = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <h1 className="text-3xl md:text-4xl font-bold">
+            <h1 className="text-3xl md:text-4xl font-bold cursor-pointer" onClick={() => navigate("/")}>
               <span className="text-rally-red">Rally</span>Engage
             </h1>
             <p className="text-sm md:text-base text-gray-300">Plateforme d'engagement en ligne pour rallyes automobiles</p>
@@ -28,15 +28,29 @@ const RallyHeader = () => {
             <span className="hidden md:inline text-sm border-l-2 border-rally-red pl-4 py-1">
               Simplifiez votre engagement en rallye
             </span>
+            
             {user ? (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-rally-red text-white hover:bg-rally-red"
-                onClick={signOut}
-              >
-                Déconnexion
-              </Button>
+              <div className="flex items-center space-x-2">
+                {isOrganizer && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-rally-red text-white hover:bg-rally-red flex items-center gap-2"
+                    onClick={() => navigate("/organizer")}
+                  >
+                    <Flag size={16} />
+                    Espace Organisateur
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-rally-red text-white hover:bg-rally-red"
+                  onClick={signOut}
+                >
+                  Déconnexion
+                </Button>
+              </div>
             ) : (
               <Button 
                 variant="outline" 

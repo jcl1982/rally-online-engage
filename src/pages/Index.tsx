@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -31,9 +30,9 @@ const Index = () => {
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from("rallies") // Utiliser la table rallies au lieu de upcoming_rallies
+          .from("rallies")
           .select("id, name, location, start_date, end_date")
-          .eq("is_upcoming", true) // Filtrer pour obtenir uniquement les rallyes à venir
+          .eq("is_upcoming", true)
           .order("start_date", { ascending: true })
           .limit(3);
 
@@ -41,14 +40,13 @@ const Index = () => {
           throw error;
         }
 
-        // Format the data for display
         const formattedRallies = data.map(rally => ({
           id: rally.id,
           name: rally.name,
           location: rally.location,
           start_date: rally.start_date,
           end_date: rally.end_date,
-          image: "/placeholder.svg" // Default image for now
+          image: "/placeholder.svg"
         }));
 
         setUpcomingRallies(formattedRallies);
@@ -110,7 +108,7 @@ const Index = () => {
                   </Button>
                 )}
                 
-                {(profile?.role === "organizer" || profile?.role === "admin") && (
+                {isOrganizer && (
                   <Button 
                     onClick={handleOrganizerAccess} 
                     className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
