@@ -18,6 +18,8 @@ export const useStagesManager = () => {
   const [stages, setStages] = useState<Stage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStage, setCurrentStage] = useState<Stage | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   
   // Charger les épreuves
   const loadStages = async () => {
@@ -32,13 +34,35 @@ export const useStagesManager = () => {
         
       if (error) throw error;
       
-      setStages(data || []);
+      // Cast the data to our Stage type with the correct status enum
+      const typedStages = data?.map(stage => ({
+        ...stage,
+        status: (stage.status as 'planned' | 'active' | 'completed')
+      })) || [];
+      
+      setStages(typedStages);
     } catch (error: any) {
       console.error("Erreur lors du chargement des épreuves:", error.message);
       toast.error("Impossible de charger les épreuves");
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Modal management
+  const openAddModal = () => {
+    setCurrentStage(null);
+    setModalOpen(true);
+  };
+  
+  const openEditModal = (stage: Stage) => {
+    setCurrentStage(stage);
+    setModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setModalOpen(false);
+    setCurrentStage(null);
   };
   
   // Créer ou mettre à jour une épreuve
@@ -94,6 +118,12 @@ export const useStagesManager = () => {
     }
   };
   
+  // Handle form submission
+  const handleSubmit = (values: Partial<Stage>) => {
+    saveStage(values);
+    closeModal();
+  };
+  
   // Supprimer une épreuve
   const deleteStage = async (stageId: string): Promise<boolean> => {
     try {
@@ -128,8 +158,14 @@ export const useStagesManager = () => {
     stages,
     isLoading,
     isSubmitting,
+    currentStage,
+    modalOpen,
+    openAddModal,
+    openEditModal,
+    closeModal,
     loadStages,
     saveStage,
-    deleteStage
+    deleteStage,
+    handleSubmit
   };
 };

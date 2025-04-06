@@ -4,10 +4,19 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Define the shape of a user profile
+interface UserProfile {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+}
+
 type AuthContextType = {
   session: Session | null;
   user: User | null;
-  profile: any | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   isOrganizer: boolean;
   signOut: () => Promise<void>;
@@ -18,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
 
@@ -27,9 +36,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Fetching profile for user:", userId);
       
-      // Utiliser la fonction RPC créée pour éviter les problèmes de récursion
+      // Call the function directly without using rpc for better type safety
       const { data, error } = await supabase
-        .rpc('get_user_profile', { user_id: userId });
+        .from('profiles')
+        .select('id, email, first_name, last_name, role')
+        .eq('id', userId)
+        .single();
 
       if (error) {
         console.error("Error fetching profile:", error);
@@ -37,10 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log("Profile fetched:", data);
-      setProfile(data);
+      
+      // Cast the data to UserProfile type
+      const userProfile = data as UserProfile;
+      setProfile(userProfile);
       
       // Définir isOrganizer basé sur le rôle récupéré
-      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
+      const userIsOrganizer = userProfile?.role === 'organizer' || userProfile?.role === 'admin';
       setIsOrganizer(userIsOrganizer);
       console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
