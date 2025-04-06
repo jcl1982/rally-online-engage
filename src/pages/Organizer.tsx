@@ -54,7 +54,8 @@ const Organizer = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate("/organizer/rally/new")}>
               <CardHeader className="pb-2">
                 <Calendar className="h-6 w-6 text-rally-red mb-2" />
                 <CardTitle>Planification</CardTitle>
@@ -65,7 +66,7 @@ const Organizer = () => {
               <CardContent>
                 <Button 
                   className="w-full bg-rally-red hover:bg-red-700" 
-                  onClick={() => toast.info("Fonctionnalité en développement")}
+                  onClick={() => navigate("/organizer/rally/new")}
                 >
                   Planifier un rallye
                 </Button>

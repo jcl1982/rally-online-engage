@@ -1,53 +1,71 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { Button } from "@/components/ui/button";
-import Index from "@/pages/Index";
-import NotFound from "@/pages/NotFound";
-import Auth from "@/pages/Auth";
-import Admin from "@/pages/Admin";
-import Organizer from "@/pages/Organizer";
-import OrganizerStages from "@/pages/OrganizerStages";
-import RallyDetails from "@/pages/RallyDetails";
-import Registration from "@/pages/Registration";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
+import Organizer from "./pages/Organizer";
+import NotFound from "./pages/NotFound";
+import Registration from "./pages/Registration";
+import OrganizerStages from "./pages/OrganizerStages";
+import RallyDetails from "./pages/RallyDetails";
+import RallyPlanning from "./pages/RallyPlanning"; // Importation de la nouvelle page
 
-const queryClient = new QueryClient();
+import "@/index.css";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/rally/:id" element={<RallyDetails />} />
-            
-            {/* Routes protégées qui nécessitent l'authentification */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/registration" element={<Registration />} />
-            </Route>
-            
-            <Route element={<ProtectedRoute requireOrganizer={true} />}>
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/organizer" element={<Organizer />} />
-              <Route path="/organizer/stages" element={<OrganizerStages />} />
-            </Route>
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth/*" element={<Auth />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer"
+          element={
+            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+              <Organizer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer/stages"
+          element={
+            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+              <OrganizerStages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer/rally/new"
+          element={
+            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+              <RallyPlanning />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/registration"
+          element={
+            <ProtectedRoute>
+              <Registration />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/rally/:id" element={<RallyDetails />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster position="top-center" richColors />
+    </Router>
+  );
+}
 
 export default App;
