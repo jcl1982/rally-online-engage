@@ -1,4 +1,5 @@
 
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Stage } from "@/hooks/useStageForm";
 import { stageSchema } from "@/schemas/organizerStageSchema";
 import { StageFormFields } from "./StageFormFields";
-import { useState } from "react";
 
 interface StageModalProps {
   isOpen: boolean;
