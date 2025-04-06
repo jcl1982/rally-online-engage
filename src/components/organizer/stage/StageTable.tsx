@@ -1,23 +1,21 @@
 
-import React from 'react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Edit, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Stage } from '@/hooks/useStageForm';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import React from "react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
+import { Stage } from "@/hooks/useStageForm";
 
 interface StageTableProps {
   stages: Stage[];
   onEdit: (stage: Stage) => void;
-  onDelete: (id: string) => void;
+  onDelete: (stageId: string) => void;
 }
 
 export const StageTable: React.FC<StageTableProps> = ({ 
@@ -25,76 +23,57 @@ export const StageTable: React.FC<StageTableProps> = ({
   onEdit, 
   onDelete 
 }) => {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'planned':
-        return <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Planifiée</span>;
-      case 'active':
-        return <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Active</span>;
-      case 'completed':
-        return <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">Terminée</span>;
-      default:
-        return <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">{status}</span>;
-    }
-  };
-
-  const formatDate = (dateString: string | undefined | null) => {
-    if (!dateString) return 'Non définie';
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: fr });
-    } catch (error) {
-      return 'Date invalide';
-    }
-  };
-
-  if (stages.length === 0) {
-    return (
-      <div className="text-center p-6 bg-gray-50 rounded-md border border-gray-200">
-        <p className="text-gray-500">Aucune épreuve trouvée</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nom</TableHead>
-            <TableHead>Localisation</TableHead>
+            <TableHead>Lieu</TableHead>
             <TableHead>Distance (km)</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {stages.map((stage) => (
-            <TableRow key={stage.id}>
-              <TableCell className="font-medium">{stage.name}</TableCell>
-              <TableCell>{stage.location}</TableCell>
-              <TableCell>{stage.distance}</TableCell>
-              <TableCell>{getStatusBadge(stage.status)}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onEdit(stage)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600"
-                    onClick={() => onDelete(stage.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+          {stages.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                Aucune épreuve n'a été ajoutée
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            stages.map((stage) => (
+              <TableRow key={stage.id}>
+                <TableCell className="font-medium">{stage.name}</TableCell>
+                <TableCell>{stage.location}</TableCell>
+                <TableCell>{stage.distance}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    stage.status === 'active' ? 'bg-green-100 text-green-800' : 
+                    stage.status === 'planned' ? 'bg-blue-100 text-blue-800' : 
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {stage.status === 'active' ? 'Active' : 
+                     stage.status === 'planned' ? 'Planifiée' : 'Terminée'}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(stage)}>
+                    <Edit size={16} />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => onDelete(stage.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

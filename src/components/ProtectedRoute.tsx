@@ -1,13 +1,14 @@
 
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   requireOrganizer?: boolean;
 }
 
 const ProtectedRoute = ({ requireOrganizer = false }: ProtectedRouteProps) => {
-  const { user, isLoading, isOrganizer } = useAuth();
+  const { user, isLoading, profile } = useAuth();
 
   if (isLoading) {
     return (
@@ -18,10 +19,12 @@ const ProtectedRoute = ({ requireOrganizer = false }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    toast.error("Vous devez être connecté pour accéder à cette page");
     return <Navigate to="/auth" replace />;
   }
 
-  if (requireOrganizer && !isOrganizer) {
+  if (requireOrganizer && profile?.role !== 'organizer' && profile?.role !== 'admin') {
+    toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
     return <Navigate to="/" replace />;
   }
 

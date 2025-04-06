@@ -8,6 +8,7 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { StageManagement } from "@/components/organizer/StageManagement";
 import { useAuth } from "@/hooks/useAuth";
+import { StageManager } from "@/components/organizer/stage/StageManager";
 
 const Organizer = () => {
   const navigate = useNavigate();
@@ -27,6 +28,13 @@ const Organizer = () => {
         <RallyFooter />
       </div>
     );
+  }
+
+  // Rediriger si l'utilisateur n'est pas un organisateur
+  if (profile.role !== 'organizer' && profile.role !== 'admin') {
+    toast.error("Vous n'avez pas les droits d'accès à l'espace organisateur");
+    navigate("/");
+    return null;
   }
 
   return (
@@ -55,7 +63,7 @@ const Organizer = () => {
             </TabsList>
 
             <TabsContent value="stages" className="space-y-6">
-              <StageManagement />
+              <StageManager />
             </TabsContent>
 
             <TabsContent value="registrations" className="space-y-6">
