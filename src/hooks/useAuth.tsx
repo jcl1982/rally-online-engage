@@ -45,7 +45,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error("Error fetching profile:", error);
-        throw error;
+        // Fallback to set isOrganizer based on email domain for testing
+        // This is a temporary workaround until the DB issue is fixed
+        if (user?.email) {
+          const isOrganizerByEmail = user.email.includes('@rally-engage.com') || 
+                                    user.email.includes('@admin.com') || 
+                                    user.email.includes('@cleonis');
+          setIsOrganizer(isOrganizerByEmail);
+          console.log("Fallback organizer check by email:", isOrganizerByEmail);
+        }
+        return;
       }
 
       console.log("Profile fetched:", data);
@@ -60,6 +69,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
+      // Set a default organizer value based on email as fallback
+      if (user?.email) {
+        const isOrganizerByEmail = user.email.includes('@rally-engage.com') || 
+                                  user.email.includes('@admin.com') || 
+                                  user.email.includes('@cleonis');
+        setIsOrganizer(isOrganizerByEmail);
+        console.log("Fallback organizer check (in catch):", isOrganizerByEmail);
+      }
     } finally {
       setIsLoading(false);
     }
