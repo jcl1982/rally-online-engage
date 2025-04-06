@@ -4,27 +4,10 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogIn, Users, Flag } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
 
 const RallyHeader = () => {
   const navigate = useNavigate();
   const { user, signOut, isOrganizer } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
-  const handleSignOut = async () => {
-    try {
-      setIsLoggingOut(true);
-      await signOut();
-      // Force la navigation après la déconnexion
-      setTimeout(() => {
-        navigate("/");
-        setIsLoggingOut(false);
-      }, 500);
-    } catch (error) {
-      console.error("Error during sign out:", error);
-      setIsLoggingOut(false);
-    }
-  };
   
   return (
     <motion.header 
@@ -63,10 +46,9 @@ const RallyHeader = () => {
                   variant="outline" 
                   size="sm"
                   className="border-rally-red text-white hover:bg-rally-red"
-                  onClick={handleSignOut}
-                  disabled={isLoggingOut}
+                  onClick={signOut}
                 >
-                  {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
+                  Déconnexion
                 </Button>
               </div>
             ) : (

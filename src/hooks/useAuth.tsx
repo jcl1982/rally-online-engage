@@ -4,19 +4,10 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Define the shape of a user profile
-interface UserProfile {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-}
-
 type AuthContextType = {
   session: Session | null;
   user: User | null;
-  profile: UserProfile | null;
+  profile: any | null;
   isLoading: boolean;
   isOrganizer: boolean;
   signOut: () => Promise<void>;
@@ -27,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
 
@@ -36,47 +27,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Fetching profile for user:", userId);
       
-      // Call the function directly without using rpc for better type safety
+      // Utiliser la fonction RPC créée pour éviter les problèmes de récursion
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, first_name, last_name, role')
-        .eq('id', userId)
-        .single();
+        .rpc('get_user_profile', { user_id: userId });
 
       if (error) {
         console.error("Error fetching profile:", error);
-        // Fallback to set isOrganizer based on email domain for testing
-        // This is a temporary workaround until the DB issue is fixed
-        if (user?.email) {
-          const isOrganizerByEmail = user.email.includes('@rally-engage.com') || 
-                                    user.email.includes('@admin.com') || 
-                                    user.email.includes('@cleonis');
-          setIsOrganizer(isOrganizerByEmail);
-          console.log("Fallback organizer check by email:", isOrganizerByEmail);
-        }
-        return;
+        throw error;
       }
 
       console.log("Profile fetched:", data);
-      
-      // Cast the data to UserProfile type
-      const userProfile = data as UserProfile;
-      setProfile(userProfile);
+      setProfile(data);
       
       // Définir isOrganizer basé sur le rôle récupéré
-      const userIsOrganizer = userProfile?.role === 'organizer' || userProfile?.role === 'admin';
+      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
       setIsOrganizer(userIsOrganizer);
       console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
-      // Set a default organizer value based on email as fallback
-      if (user?.email) {
-        const isOrganizerByEmail = user.email.includes('@rally-engage.com') || 
-                                  user.email.includes('@admin.com') || 
-                                  user.email.includes('@cleonis');
-        setIsOrganizer(isOrganizerByEmail);
-        console.log("Fallback organizer check (in catch):", isOrganizerByEmail);
-      }
     } finally {
       setIsLoading(false);
     }
@@ -84,8 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Configurer l'écouteur de changement d'état d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed, event:", event, "session:", session ? "exists" : "null");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      console.log("Auth state changed:", session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -102,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Vérifier la session actuelle
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session:", session ? "exists" : "null");
+      console.log("Initial session:", session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -119,35 +87,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    console.log("Attempting to sign out...");
-    setIsLoading(true);
-    
     try {
-      // Force le rafraîchissement de la session avant la déconnexion
-      await supabase.auth.refreshSession();
-      console.log("Session refreshed before logout");
-      
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Erreur lors de la déconnexion:", error);
-        toast.error("Erreur lors de la déconnexion");
-        throw error;
-      }
-      
-      console.log("Sign out successful");
-      
-      // Force reset local state since sometimes onAuthStateChange might not trigger immediately
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setIsOrganizer(false);
-      
+      await supabase.auth.signOut();
       toast.success("Déconnexion réussie");
     } catch (error) {
-      console.error("Erreur critique lors de la déconnexion:", error);
-      toast.error("Erreur lors de la déconnexion, veuillez réessayer");
-    } finally {
-      setIsLoading(false);
+      console.error("Erreur lors de la déconnexion:", error);
+      toast.error("Erreur lors de la déconnexion");
     }
   };
 
