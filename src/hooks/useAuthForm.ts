@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -21,6 +21,7 @@ export const useAuthForm = (initialMode: AuthMode = 'signin') => {
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),

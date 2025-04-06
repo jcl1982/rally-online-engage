@@ -74,8 +74,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Profile fetched:", data);
       setProfile(data);
       const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
+      console.log("User is organizer (before setting state):", userIsOrganizer);
       setIsOrganizer(userIsOrganizer);
-      console.log("User is organizer:", userIsOrganizer);
+      console.log("User is organizer (after setting state):", userIsOrganizer);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
     } finally {

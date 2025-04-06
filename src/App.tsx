@@ -12,6 +12,7 @@ import NotFound from "@/pages/NotFound";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
 import Organizer from "@/pages/Organizer";
+import OrganizerStages from "@/pages/OrganizerStages";
 import RallyDetails from "@/pages/RallyDetails";
 import Registration from "@/pages/Registration";
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route element={<ProtectedRoute requireOrganizer={true} />}>
               <Route path="/admin" element={<Admin />} />
               <Route path="/organizer" element={<Organizer />} />
+              <Route path="/organizer/stages" element={<OrganizerStages />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

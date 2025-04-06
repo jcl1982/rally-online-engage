@@ -1,63 +1,97 @@
 
-import { useState } from "react";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Flag, Calendar, TrendingUp, Settings, Users } from "lucide-react";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
-import { StageManager } from "@/components/organizer/stage/StageManager";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Organizer = () => {
-  const [activeTab, setActiveTab] = useState("stages");
+  const navigate = useNavigate();
   const { profile } = useAuth();
-  
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <RallyHeader />
-      <motion.main 
-        className="flex-grow container mx-auto px-4 py-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold border-b pb-4">Espace Organisateur</h1>
-          <div className="text-gray-600">
-            Connecté en tant que {profile?.first_name || profile?.email}
-          </div>
-        </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="stages">Épreuves Spéciales</TabsTrigger>
-            <TabsTrigger value="registrations">Engagements</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="stages">
-            <StageManager />
-          </TabsContent>
-          
-          <TabsContent value="registrations">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-4">Gestion des Engagements</h2>
-              <p className="text-gray-600 mb-4">
-                Cette section vous permet de gérer les engagements des participants aux rallyes.
-              </p>
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-yellow-700">
-                  Fonctionnalité en cours de développement. Vous pourrez bientôt:
-                </p>
-                <ul className="list-disc ml-5 mt-2 text-yellow-700">
-                  <li>Voir la liste des participants inscrits</li>
-                  <li>Valider ou refuser des engagements</li>
-                  <li>Communiquer avec les participants</li>
-                  <li>Gérer les documents d'engagement</li>
-                </ul>
-              </div>
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">Espace Organisateur</h1>
+              <p className="text-gray-600">Gérez vos rallyes et équipages</p>
             </div>
-          </TabsContent>
-        </Tabs>
-      </motion.main>
+            <div>
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                {profile?.role === 'admin' ? 'Administrateur' : 'Organisateur'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => navigate("/organizer/stages")}>
+              <CardHeader className="pb-2">
+                <Flag className="h-6 w-6 text-rally-red mb-2" />
+                <CardTitle>Gestion des Épreuves</CardTitle>
+                <CardDescription>
+                  Ajouter, modifier ou supprimer des épreuves de rallye
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-rally-red hover:bg-red-700"
+                  onClick={() => navigate("/organizer/stages")}
+                >
+                  Gérer les épreuves
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="pb-2">
+                <Calendar className="h-6 w-6 text-rally-red mb-2" />
+                <CardTitle>Planification</CardTitle>
+                <CardDescription>
+                  Planifiez vos prochains rallyes et événements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-rally-red hover:bg-red-700" 
+                  onClick={() => toast.info("Fonctionnalité en développement")}
+                >
+                  Planifier un rallye
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="pb-2">
+                <Users className="h-6 w-6 text-rally-red mb-2" />
+                <CardTitle>Équipages</CardTitle>
+                <CardDescription>
+                  Gérer les équipages et les inscriptions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-rally-red hover:bg-red-700"
+                  onClick={() => toast.info("Fonctionnalité en développement")}
+                >
+                  Voir les équipages
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+      </main>
       <RallyFooter />
     </div>
   );
