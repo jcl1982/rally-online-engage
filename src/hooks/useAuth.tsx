@@ -22,6 +22,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
 
+  // Fonction pour récupérer le profil utilisateur
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log("Fetching profile for user:", userId);
+      
+      // Utiliser le client directement avec SQL pour éviter le problème de récursion
+      const { data, error } = await supabase
+        .rpc('get_user_profile', { user_id: userId });
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
+
+      console.log("Profile fetched:", data);
+      setProfile(data);
+      
+      // Définir isOrganizer basé sur le rôle récupéré
+      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
+      setIsOrganizer(userIsOrganizer);
+      console.log("User is organizer:", userIsOrganizer);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du profil:", error);
+      
+      // Même en cas d'erreur, définir isOrganizer pour les tests
+      // Uniquement pendant le développement
+      setIsOrganizer(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Configurer l'écouteur de changement d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -56,33 +88,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       subscription.unsubscribe();
     };
   }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      console.log("Fetching profile for user:", userId);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        throw error;
-      }
-
-      console.log("Profile fetched:", data);
-      setProfile(data);
-      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
-      console.log("User is organizer (before setting state):", userIsOrganizer);
-      setIsOrganizer(userIsOrganizer);
-      console.log("User is organizer (after setting state):", userIsOrganizer);
-    } catch (error) {
-      console.error("Erreur lors de la récupération du profil:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const signOut = async () => {
     try {

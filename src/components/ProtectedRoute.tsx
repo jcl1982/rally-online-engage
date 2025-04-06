@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ requireOrganizer = false }: ProtectedRouteProps) => {
-  const { user, isLoading, profile } = useAuth();
+  const { user, isLoading, isOrganizer } = useAuth();
 
   if (isLoading) {
     return (
@@ -24,13 +24,13 @@ const ProtectedRoute = ({ requireOrganizer = false }: ProtectedRouteProps) => {
   }
 
   // Vérifie si l'utilisateur est un organisateur quand c'est requis
-  if (requireOrganizer && profile?.role !== 'organizer' && profile?.role !== 'admin') {
-    console.log("Accès refusé - Rôle requis: organizer ou admin, rôle actuel:", profile?.role);
+  if (requireOrganizer && !isOrganizer) {
+    console.log("Accès refusé - Organizer requis, isOrganizer:", isOrganizer);
     toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
     return <Navigate to="/" replace />;
   }
 
-  console.log("Accès autorisé - Rôle de l'utilisateur:", profile?.role);
+  console.log("Accès autorisé - isOrganizer:", isOrganizer);
   return <Outlet />;
 };
 

@@ -1,65 +1,65 @@
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Stage } from "./useStageForm";
 import { toast } from "sonner";
 
+export interface Stage {
+  id: string;
+  name: string;
+  distance: number;
+  location: string;
+  description?: string;
+  rally_id: string;
+  status: string;
+}
+
 export const useStagesManager = () => {
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentStage, setCurrentStage] = useState<Stage | null>(null);
-  const queryClient = useQueryClient();
 
-  // Récupération des épreuves
-  const { data: stages = [], isLoading } = useQuery({
-    queryKey: ["stages"],
-    queryFn: async () => {
+  const fetchStages = async () => {
+    try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("rally_stages")
         .select("*")
-        .order("name");
+        .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Erreur lors de la récupération des épreuves:", error);
-        toast.error("Erreur lors du chargement des épreuves");
-        return [];
-      }
+      if (error) throw error;
 
-      return data as Stage[];
-    },
-  });
+      setStages(data || []);
+    } catch (error) {
+      console.error("Erreur lors du chargement des épreuves:", error);
+      toast.error("Impossible de charger les épreuves");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Ouverture du modal pour ajouter une épreuve
+  useEffect(() => {
+    fetchStages();
+  }, []);
+
   const openAddModal = () => {
     setCurrentStage(null);
     setModalOpen(true);
   };
 
-  // Ouverture du modal pour modifier une épreuve
   const openEditModal = (stage: Stage) => {
     setCurrentStage(stage);
     setModalOpen(true);
   };
 
-  // Fermeture du modal
   const closeModal = () => {
     setModalOpen(false);
     setCurrentStage(null);
   };
 
-  // Soumission du formulaire (ajout ou modification)
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (stageData: Partial<Stage>) => {
     try {
-      const stageData = {
-        name: values.name,
-        location: values.location,
-        description: values.description || null,
-        distance: Number(values.distance),
-        status: values.status,
-        rally_id: currentStage?.rally_id || stages[0]?.rally_id || "default-rally-id",
-      };
-
-      if (currentStage) {
+      if (currentStage?.id) {
         // Mise à jour d'une épreuve existante
         const { error } = await supabase
           .from("rally_stages")
@@ -72,36 +72,34 @@ export const useStagesManager = () => {
         // Création d'une nouvelle épreuve
         const { error } = await supabase
           .from("rally_stages")
-          .insert(stageData);
+          .insert([stageData]);
 
         if (error) throw error;
-        toast.success("Épreuve ajoutée avec succès");
+        toast.success("Nouvelle épreuve ajoutée");
       }
 
-      queryClient.invalidateQueries({ queryKey: ["stages"] });
       closeModal();
-    } catch (error: any) {
-      console.error("Erreur lors de l'enregistrement:", error);
-      toast.error("Une erreur s'est produite lors de l'enregistrement");
+      fetchStages();
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de l'épreuve:", error);
+      toast.error("Impossible d'enregistrer l'épreuve");
     }
   };
 
-  // Suppression d'une épreuve
   const deleteStage = async (stageId: string) => {
     try {
-      if (window.confirm("Êtes-vous sûr de vouloir supprimer cette épreuve ?")) {
-        const { error } = await supabase
-          .from("rally_stages")
-          .delete()
-          .eq("id", stageId);
+      const { error } = await supabase
+        .from("rally_stages")
+        .delete()
+        .eq("id", stageId);
 
-        if (error) throw error;
-        toast.success("Épreuve supprimée avec succès");
-        queryClient.invalidateQueries({ queryKey: ["stages"] });
-      }
-    } catch (error: any) {
-      console.error("Erreur lors de la suppression:", error);
-      toast.error("Une erreur s'est produite lors de la suppression");
+      if (error) throw error;
+      
+      toast.success("Épreuve supprimée avec succès");
+      fetchStages();
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'épreuve:", error);
+      toast.error("Impossible de supprimer l'épreuve");
     }
   };
 
