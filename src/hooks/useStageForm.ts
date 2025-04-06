@@ -1,70 +1,63 @@
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Stage {
   id: string;
-  rally_id: string;
   name: string;
   location: string;
-  description: string | null;
+  description?: string;
   distance: number;
   status: "planned" | "active" | "completed";
-  created_at: string;
-  updated_at: string;
+  rally_id: string;
 }
 
-interface StageFormProps {
+interface UseStageFormProps {
   initialData?: Stage;
   defaultRallyId: string;
   onClose: () => void;
 }
 
-export const useStageForm = ({ initialData, defaultRallyId, onClose }: StageFormProps) => {
+export const useStageForm = ({ initialData, defaultRallyId, onClose }: UseStageFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!initialData;
-  const queryClient = useQueryClient();
 
   const handleSubmit = async (values: any) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      
-      // Préparer les données pour la soumission
       const stageData = {
-        ...values,
+        name: values.name,
+        location: values.location,
+        description: values.description || null,
         distance: Number(values.distance),
-        rally_id: initialData?.rally_id || defaultRallyId,
+        status: values.status,
+        rally_id: defaultRallyId,
       };
-      
-      if (isEditMode) {
-        // Mise à jour d'une épreuve existante
+
+      if (isEditMode && initialData) {
+        // Update existing stage
         const { error } = await supabase
           .from("rally_stages")
           .update(stageData)
           .eq("id", initialData.id);
-          
+
         if (error) throw error;
         toast.success("Épreuve mise à jour avec succès");
       } else {
-        // Création d'une nouvelle épreuve
+        // Create new stage
         const { error } = await supabase
           .from("rally_stages")
           .insert(stageData);
-          
+
         if (error) throw error;
-        toast.success("Épreuve créée avec succès");
+        toast.success("Épreuve ajoutée avec succès");
       }
-      
-      // Invalider le cache de requêtes pour recharger les données
-      queryClient.invalidateQueries({ queryKey: ["stages"] });
-      
-      // Fermer le formulaire
+
       onClose();
-    } catch (error: any) {
-      console.error("Erreur lors de la soumission:", error);
-      toast.error(error.message || "Une erreur est survenue");
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement:", error);
+      toast.error("Une erreur s'est produite lors de l'enregistrement");
     } finally {
       setIsSubmitting(false);
     }
