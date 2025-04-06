@@ -593,6 +593,12 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_user_profile: {
+        Args: {
+          user_id: string
+        }
+        Returns: Json
+      }
       update_timing_point: {
         Args: {
           p_id: string

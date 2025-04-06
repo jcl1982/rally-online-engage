@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Fetching profile for user:", userId);
       
-      // Utiliser le client directement avec SQL pour éviter le problème de récursion
+      // Utiliser la fonction RPC créée pour éviter les problèmes de récursion
       const { data, error } = await supabase
         .rpc('get_user_profile', { user_id: userId });
 
@@ -45,10 +45,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
-      
-      // Même en cas d'erreur, définir isOrganizer pour les tests
-      // Uniquement pendant le développement
-      setIsOrganizer(true);
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!session?.user) {
         setProfile(null);
         setIsOrganizer(false);
+        setIsLoading(false);
+      } else {
+        // Charger le profil si l'utilisateur est connecté
+        fetchUserProfile(session.user.id);
       }
     });
 
@@ -75,10 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Utiliser setTimeout pour éviter les problèmes de boucle d'authentification
-        setTimeout(() => {
-          fetchUserProfile(session.user.id);
-        }, 0);
+        fetchUserProfile(session.user.id);
       } else {
         setIsLoading(false);
       }
