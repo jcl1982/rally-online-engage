@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -15,10 +14,13 @@ const RallyHeader = () => {
     try {
       setIsLoggingOut(true);
       await signOut();
-      navigate("/");
+      // Force la navigation après la déconnexion
+      setTimeout(() => {
+        navigate("/");
+        setIsLoggingOut(false);
+      }, 500);
     } catch (error) {
       console.error("Error during sign out:", error);
-    } finally {
       setIsLoggingOut(false);
     }
   };

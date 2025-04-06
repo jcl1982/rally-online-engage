@@ -106,6 +106,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
+      // Force le rafraîchissement de la session avant la déconnexion
+      await supabase.auth.refreshSession();
+      console.log("Session refreshed before logout");
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Erreur lors de la déconnexion:", error);
