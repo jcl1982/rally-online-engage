@@ -35,6 +35,7 @@ export const useAuthForm = (initialMode: AuthMode = 'signin') => {
       setIsLoading(true);
       
       if (authMode === 'signin') {
+        console.log("Tentative de connexion avec:", data.email);
         const { data: authData, error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
@@ -47,24 +48,34 @@ export const useAuthForm = (initialMode: AuthMode = 'signin') => {
         // Redirection basée sur la présence d'un utilisateur authentifié
         if (authData?.user) {
           // Récupération du profil utilisateur pour vérifier son rôle
-          const { data: profileData } = await supabase
+          console.log("Récupération du profil pour:", authData.user.id);
+          const { data: profileData, error: profileError } = await supabase
             .from("profiles")
             .select("role")
             .eq("id", authData.user.id)
             .single();
 
+          if (profileError) {
+            console.error("Erreur récupération profil:", profileError);
+          }
+
+          console.log("Profil récupéré:", profileData);
+
           // Redirection avec un délai pour laisser le temps au toast d'être affiché
           setTimeout(() => {
             // Si l'utilisateur est un organisateur ou un admin, rediriger vers l'espace organisateur
             if (profileData?.role === "organizer" || profileData?.role === "admin") {
+              console.log("Redirection vers /organizer");
               navigate("/organizer");
             } else {
               // Sinon rediriger vers la page d'accueil
+              console.log("Redirection vers /");
               navigate("/");
             }
           }, 1000);
         }
       } else {
+        console.log("Tentative d'inscription avec:", data.email);
         const { data: authData, error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
@@ -72,6 +83,7 @@ export const useAuthForm = (initialMode: AuthMode = 'signin') => {
             data: {
               first_name: "",
               last_name: "",
+              role: "organizer" // Définir le rôle par défaut lors de l'inscription
             },
           }
         });

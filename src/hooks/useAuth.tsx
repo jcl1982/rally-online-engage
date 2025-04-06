@@ -2,6 +2,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type AuthContextType = {
   session: Session | null;
@@ -24,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Configurer l'écouteur de changement d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      console.log("Auth state changed:", session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -36,11 +38,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Vérifier la session actuelle
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Récupérer le profil de l'utilisateur
+        // Utiliser setTimeout pour éviter les problèmes de boucle d'authentification
         setTimeout(() => {
           fetchUserProfile(session.user.id);
         }, 0);
@@ -56,16 +59,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user:", userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
 
+      console.log("Profile fetched:", data);
       setProfile(data);
-      setIsOrganizer(data?.role === 'organizer' || data?.role === 'admin');
+      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
+      setIsOrganizer(userIsOrganizer);
+      console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
       console.error("Erreur lors de la récupération du profil:", error);
     } finally {
@@ -76,8 +86,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      toast.success("Déconnexion réussie");
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
+      toast.error("Erreur lors de la déconnexion");
     }
   };
 
