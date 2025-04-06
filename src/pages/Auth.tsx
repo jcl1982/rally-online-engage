@@ -64,9 +64,22 @@ const Auth = () => {
         
         // Redirection basée sur la présence d'un utilisateur authentifié
         if (authData?.user) {
+          // Récupération du profil utilisateur pour vérifier son rôle
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", authData.user.id)
+            .single();
+
           // Redirection avec un délai pour laisser le temps au toast d'être affiché
           setTimeout(() => {
-            navigate("/");
+            // Si l'utilisateur est un organisateur ou un admin, rediriger vers l'espace organisateur
+            if (profileData?.role === "organizer" || profileData?.role === "admin") {
+              navigate("/organizer");
+            } else {
+              // Sinon rediriger vers la page d'accueil
+              navigate("/");
+            }
           }, 1000);
         }
       } else {
