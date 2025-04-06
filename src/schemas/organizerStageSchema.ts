@@ -1,6 +1,12 @@
 
 import * as z from "zod";
 
+export const statusOptions = [
+  { value: "planned", label: "Planifiée" },
+  { value: "active", label: "Active" },
+  { value: "completed", label: "Terminée" },
+];
+
 export const stageSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   location: z.string().min(2, "Le lieu doit contenir au moins 2 caractères"),
