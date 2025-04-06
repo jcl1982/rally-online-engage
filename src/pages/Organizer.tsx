@@ -1,164 +1,83 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
-import { Button } from "@/components/ui/button";
-import { LogOut, ChevronLeft, Flag, Users, Award, CalendarClock } from "lucide-react";
-import { StageManager } from "@/components/organizer/stage/StageManager";
-import { Card } from "@/components/ui/card";
+import StageManagement from "@/components/organizer/StageManagement";
+import { useAuth } from "@/hooks/useAuth";
 
 const Organizer = () => {
-  const { signOut, profile } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("stages");
+  const { user, profile } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("stages");
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
-
-  const handleBackToAdmin = () => {
-    navigate("/admin");
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "stages":
-        return <StageManager />;
-      case "participants":
-        return (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Gestion des Participants</h3>
-            <p className="text-gray-500 mb-4">
-              Cette section vous permet de gérer les inscriptions et les participants à votre rallye.
-            </p>
-            <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-              <h4 className="font-medium text-gray-700 mb-2">Fonctionnalités à venir :</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>Liste des participants inscrits</li>
-                <li>Validation des inscriptions</li>
-                <li>Attribution des numéros de course</li>
-                <li>Vérifications techniques et administratives</li>
-              </ul>
-            </div>
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <RallyHeader />
+        <main className="flex-grow container mx-auto px-4 py-12 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red mx-auto mb-4"></div>
+            <p>Chargement des informations organisateur...</p>
           </div>
-        );
-      case "results":
-        return (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Gestion des Résultats</h3>
-            <p className="text-gray-500 mb-4">
-              Cette section vous permettra de saisir et de consulter les résultats des épreuves.
-            </p>
-            <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-              <h4 className="font-medium text-gray-700 mb-2">Fonctionnalités à venir :</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>Saisie des temps par spéciale</li>
-                <li>Classement général et par catégorie</li>
-                <li>Calcul des pénalités</li>
-                <li>Publication des résultats en direct</li>
-              </ul>
-            </div>
-          </div>
-        );
-      case "planning":
-        return (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Planning et Horaires</h3>
-            <p className="text-gray-500 mb-4">
-              Cette section vous permettra de gérer le planning et les horaires du rallye.
-            </p>
-            <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-              <h4 className="font-medium text-gray-700 mb-2">Fonctionnalités à venir :</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>Création des horaires de départ</li>
-                <li>Gestion des ordres de passage</li>
-                <li>Planification des reconnaissances</li>
-                <li>Horaires des vérifications techniques</li>
-              </ul>
-            </div>
-          </div>
-        );
-      default:
-        return <StageManager />;
-    }
-  };
+        </main>
+        <RallyFooter />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <RallyHeader />
-      <div className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-2">
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Espace Organisateur</h1>
+            <div className="mt-4 md:mt-0">
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToAdmin}
-                className="flex items-center gap-1 text-gray-600"
+                onClick={() => navigate("/")}
+                variant="outline"
+                className="ml-2"
               >
-                <ChevronLeft size={16} />
-                Retour
+                Retour à l'accueil
               </Button>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Espace Organisateur</h1>
-            <p className="text-gray-600">
-              Organisateur: {profile?.first_name || profile?.email}
-            </p>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
-            <LogOut size={16} />
-            Déconnexion
-          </Button>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1">
-            <Card className="p-4">
-              <nav className="space-y-1">
-                <Button
-                  variant={activeTab === "stages" ? "default" : "ghost"}
-                  className={`w-full justify-start ${activeTab === "stages" ? "bg-rally-red hover:bg-red-700" : ""}`}
-                  onClick={() => setActiveTab("stages")}
-                >
-                  <Flag size={18} className="mr-2" />
-                  Épreuves
-                </Button>
-                <Button
-                  variant={activeTab === "participants" ? "default" : "ghost"}
-                  className={`w-full justify-start ${activeTab === "participants" ? "bg-rally-red hover:bg-red-700" : ""}`}
-                  onClick={() => setActiveTab("participants")}
-                >
-                  <Users size={18} className="mr-2" />
-                  Participants
-                </Button>
-                <Button
-                  variant={activeTab === "results" ? "default" : "ghost"}
-                  className={`w-full justify-start ${activeTab === "results" ? "bg-rally-red hover:bg-red-700" : ""}`}
-                  onClick={() => setActiveTab("results")}
-                >
-                  <Award size={18} className="mr-2" />
-                  Résultats
-                </Button>
-                <Button
-                  variant={activeTab === "planning" ? "default" : "ghost"}
-                  className={`w-full justify-start ${activeTab === "planning" ? "bg-rally-red hover:bg-red-700" : ""}`}
-                  onClick={() => setActiveTab("planning")}
-                >
-                  <CalendarClock size={18} className="mr-2" />
-                  Planning
-                </Button>
-              </nav>
-            </Card>
-          </div>
-          
-          <div className="md:col-span-3">
-            {renderContent()}
-          </div>
+          <Tabs defaultValue="stages" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="stages">Gestion des Épreuves</TabsTrigger>
+              <TabsTrigger value="registrations">Inscriptions</TabsTrigger>
+              <TabsTrigger value="results">Résultats</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="stages" className="space-y-6">
+              <StageManagement />
+            </TabsContent>
+
+            <TabsContent value="registrations" className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+                <h3 className="text-lg font-medium mb-4">Gestion des inscriptions</h3>
+                <p className="text-gray-600">
+                  Cette section est en cours de développement et sera bientôt disponible.
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="results" className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+                <h3 className="text-lg font-medium mb-4">Gestion des résultats</h3>
+                <p className="text-gray-600">
+                  Cette section est en cours de développement et sera bientôt disponible.
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
+      </main>
       <RallyFooter />
     </div>
   );
