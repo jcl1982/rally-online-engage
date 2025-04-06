@@ -3,95 +3,76 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { StageFormValues } from "@/schemas/organizerStageSchema";
 
 export interface Stage {
   id: string;
   rally_id: string;
   name: string;
   location: string;
-  description?: string;
+  description: string | null;
   distance: number;
-  status: string;
-  start_time?: string | null;
+  status: "planned" | "active" | "completed";
+  created_at: string;
+  updated_at: string;
 }
 
-interface UseStageFormProps {
+interface StageFormProps {
   initialData?: Stage;
   defaultRallyId: string;
   onClose: () => void;
 }
 
-export const useStageForm = ({ initialData, defaultRallyId, onClose }: UseStageFormProps) => {
+export const useStageForm = ({ initialData, defaultRallyId, onClose }: StageFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const queryClient = useQueryClient();
   const isEditMode = !!initialData;
+  const queryClient = useQueryClient();
 
-  const saveStageMutation = useMutation({
-    mutationFn: async (values: StageFormValues) => {
-      if (isEditMode && initialData) {
-        // Ensure all required fields are present
-        const updatedValues = {
-          name: values.name,
-          location: values.location,
-          description: values.description || null,
-          distance: Number(values.distance),
-          status: values.status
-        };
-        
+  const handleSubmit = async (values: any) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Préparer les données pour la soumission
+      const stageData = {
+        ...values,
+        distance: Number(values.distance),
+        rally_id: initialData?.rally_id || defaultRallyId,
+      };
+      
+      if (isEditMode) {
+        // Mise à jour d'une épreuve existante
         const { error } = await supabase
           .from("rally_stages")
-          .update(updatedValues)
+          .update(stageData)
           .eq("id", initialData.id);
-        
+          
         if (error) throw error;
-        return { ...updatedValues, id: initialData.id };
+        toast.success("Épreuve mise à jour avec succès");
       } else {
-        // Ajout du rally_id qui est requis par la table rally_stages
-        const stageData = {
-          rally_id: defaultRallyId,
-          name: values.name,
-          location: values.location,
-          description: values.description || null,
-          distance: Number(values.distance),
-          status: values.status
-        };
-        
-        const { data, error } = await supabase
+        // Création d'une nouvelle épreuve
+        const { error } = await supabase
           .from("rally_stages")
-          .insert(stageData)
-          .select()
-          .single();
-        
+          .insert(stageData);
+          
         if (error) throw error;
-        return data;
+        toast.success("Épreuve créée avec succès");
       }
-    },
-    onSuccess: () => {
+      
+      // Invalider le cache de requêtes pour recharger les données
       queryClient.invalidateQueries({ queryKey: ["stages"] });
-      toast.success(`Épreuve ${isEditMode ? "modifiée" : "ajoutée"} avec succès`);
+      
+      // Fermer le formulaire
       onClose();
-    },
-    onError: (error) => {
-      console.error("Erreur lors de l'enregistrement:", error);
-      toast.error(`Erreur lors de l'${isEditMode ? "modification" : "ajout"} de l'épreuve`);
+    } catch (error: any) {
+      console.error("Erreur lors de la soumission:", error);
+      toast.error(error.message || "Une erreur est survenue");
+    } finally {
       setIsSubmitting(false);
-    },
-  });
-
-  const handleSubmit = async (values: StageFormValues) => {
-    if (!defaultRallyId && !isEditMode) {
-      toast.error("Aucun rallye sélectionné. Impossible d'ajouter l'épreuve.");
-      return;
     }
-    
-    setIsSubmitting(true);
-    saveStageMutation.mutate(values);
   };
 
   return {
     isSubmitting,
     isEditMode,
-    handleSubmit
+    handleSubmit,
   };
 };

@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { StageManagement } from "@/components/organizer/StageManagement";
 import { toast } from "sonner";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
+import { StageManager } from "@/components/organizer/stage/StageManager";
 
 const Organizer = () => {
   return (
@@ -17,7 +17,7 @@ const Organizer = () => {
         transition={{ duration: 0.3 }}
       >
         <h1 className="text-3xl font-bold mb-8 border-b pb-4">Espace Organisateur</h1>
-        <StageManagement />
+        <StageManager />
       </motion.main>
       <RallyFooter />
     </div>
