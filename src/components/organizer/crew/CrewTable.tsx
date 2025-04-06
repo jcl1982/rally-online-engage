@@ -3,10 +3,10 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
-import { Registration } from '@/types/registration.types';
+import { SafeRegistration } from '@/types/registration.types';
 
 interface CrewTableProps {
-  registrations: Registration[];
+  registrations: SafeRegistration[];
   isLoading: boolean;
   rallyName?: string;
 }
@@ -58,46 +58,60 @@ export const CrewTable: React.FC<CrewTableProps> = ({ registrations, isLoading, 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {registrations.map((registration) => (
-            <TableRow key={registration.id} className="hover:bg-gray-50 cursor-pointer">
-              <TableCell className="font-medium">
-                {registration.driver?.last_name?.toUpperCase()} / {registration.co_driver?.last_name?.toUpperCase() || "—"}
-              </TableCell>
-              <TableCell>
-                <div>{registration.driver?.first_name} {registration.driver?.last_name}</div>
-                <div className="text-xs text-gray-500">{registration.driver?.email}</div>
-                {registration.driver?.license_number && (
-                  <div className="text-xs text-gray-500">Licence: {registration.driver?.license_number}</div>
-                )}
-              </TableCell>
-              <TableCell>
-                {registration.co_driver ? (
-                  <>
-                    <div>{registration.co_driver?.first_name} {registration.co_driver?.last_name}</div>
-                    <div className="text-xs text-gray-500">{registration.co_driver?.email}</div>
-                    {registration.co_driver?.license_number && (
-                      <div className="text-xs text-gray-500">Licence: {registration.co_driver?.license_number}</div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-gray-400">Non spécifié</span>
-                )}
-              </TableCell>
-              <TableCell>
-                {registration.vehicle ? (
-                  <>
-                    <div>{registration.vehicle?.make} {registration.vehicle?.model} ({registration.vehicle?.year})</div>
-                    <div className="text-xs text-gray-500">{registration.vehicle?.registration_number}</div>
-                  </>
-                ) : (
-                  <span className="text-gray-400">Non spécifié</span>
-                )}
-              </TableCell>
-              <TableCell>
-                {getStatusBadge(registration.status)}
-              </TableCell>
-            </TableRow>
-          ))}
+          {registrations.map((registration) => {
+            // Check if the driver field is actually a Profile or an error object
+            const hasDriverData = registration.driver && !registration.driver.error;
+            const hasCoDriverData = registration.co_driver && !registration.co_driver.error;
+            const hasVehicleData = registration.vehicle && !registration.vehicle.error;
+            
+            return (
+              <TableRow key={registration.id} className="hover:bg-gray-50 cursor-pointer">
+                <TableCell className="font-medium">
+                  {hasDriverData ? `${registration.driver?.last_name?.toUpperCase()}` : '—'} / 
+                  {hasCoDriverData ? `${registration.co_driver?.last_name?.toUpperCase()}` : '—'}
+                </TableCell>
+                <TableCell>
+                  {hasDriverData ? (
+                    <>
+                      <div>{registration.driver?.first_name} {registration.driver?.last_name}</div>
+                      <div className="text-xs text-gray-500">{registration.driver?.email}</div>
+                      {registration.driver?.license_number && (
+                        <div className="text-xs text-gray-500">Licence: {registration.driver?.license_number}</div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-gray-400">Données non disponibles</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {hasCoDriverData ? (
+                    <>
+                      <div>{registration.co_driver?.first_name} {registration.co_driver?.last_name}</div>
+                      <div className="text-xs text-gray-500">{registration.co_driver?.email}</div>
+                      {registration.co_driver?.license_number && (
+                        <div className="text-xs text-gray-500">Licence: {registration.co_driver?.license_number}</div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-gray-400">Non spécifié</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {hasVehicleData ? (
+                    <>
+                      <div>{registration.vehicle?.make} {registration.vehicle?.model} ({registration.vehicle?.year})</div>
+                      <div className="text-xs text-gray-500">{registration.vehicle?.registration_number}</div>
+                    </>
+                  ) : (
+                    <span className="text-gray-400">Non spécifié</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {getStatusBadge(registration.status)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

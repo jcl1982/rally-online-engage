@@ -20,7 +20,7 @@ const RallyActionBar = ({ rally, currentTab, showBackButton = true }: RallyActio
           <div className="flex items-center space-x-4">
             {showBackButton && (
               <Button
-                variant="ghost"
+                variant="header"
                 size="sm"
                 onClick={() => navigate('/organizer')}
                 className="text-gray-600 hover:text-gray-900"
@@ -37,7 +37,7 @@ const RallyActionBar = ({ rally, currentTab, showBackButton = true }: RallyActio
               variant={currentTab === 'stages' ? 'default' : 'outline'}
               size="sm"
               onClick={() => navigate(`/organizer/rally/${rally.id}/stages`)}
-              className={currentTab === 'stages' ? '' : ''}
+              className={currentTab === 'stages' ? 'bg-rally-red hover:bg-red-700 text-white' : ''}
             >
               <Map className="h-4 w-4 mr-2" />
               Épreuves
@@ -47,7 +47,7 @@ const RallyActionBar = ({ rally, currentTab, showBackButton = true }: RallyActio
               variant={currentTab === 'calendar' ? 'default' : 'outline'}
               size="sm"
               onClick={() => navigate(`/organizer/rally/${rally.id}/calendar`)}
-              className={currentTab === 'calendar' ? '' : ''}
+              className={currentTab === 'calendar' ? 'bg-rally-red hover:bg-red-700 text-white' : ''}
               disabled={!rally.id} // Désactiver si le rallye n'existe pas encore
             >
               <Calendar className="h-4 w-4 mr-2" />
@@ -58,7 +58,7 @@ const RallyActionBar = ({ rally, currentTab, showBackButton = true }: RallyActio
               variant={currentTab === 'participants' ? 'default' : 'outline'}
               size="sm"
               onClick={() => navigate(`/organizer/rally/${rally.id}/participants`)}
-              className={currentTab === 'participants' ? '' : ''}
+              className={currentTab === 'participants' ? 'bg-rally-red hover:bg-red-700 text-white' : ''}
               disabled={!rally.id} // Désactiver si le rallye n'existe pas encore
             >
               <Users className="h-4 w-4 mr-2" />
@@ -69,7 +69,7 @@ const RallyActionBar = ({ rally, currentTab, showBackButton = true }: RallyActio
               variant={currentTab === 'settings' ? 'default' : 'outline'}
               size="sm"
               onClick={() => navigate(`/organizer/rally/${rally.id}/settings`)}
-              className={currentTab === 'settings' ? '' : ''}
+              className={currentTab === 'settings' ? 'bg-rally-red hover:bg-red-700 text-white' : ''}
               disabled={!rally.id} // Désactiver si le rallye n'existe pas encore
             >
               <Settings className="h-4 w-4 mr-2" />

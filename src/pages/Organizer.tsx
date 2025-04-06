@@ -45,7 +45,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700"
+                  className="w-full bg-rally-red hover:bg-red-700 text-white"
                   onClick={() => navigate("/organizer/stages")}
                 >
                   Gérer les épreuves
@@ -64,7 +64,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700" 
+                  className="w-full bg-rally-red hover:bg-red-700 text-white"
                   onClick={() => navigate("/organizer/rally/new")}
                 >
                   Planifier un rallye
@@ -83,7 +83,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700"
+                  className="w-full bg-rally-red hover:bg-red-700 text-white"
                   onClick={() => navigate("/organizer/crews")}
                 >
                   Voir les équipages

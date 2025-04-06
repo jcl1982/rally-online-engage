@@ -20,6 +20,7 @@ export const RallyFormActions = ({ isSubmitting }: RallyFormActionsProps) => {
       </Button>
       <Button 
         type="submit" 
+        className="bg-rally-red hover:bg-red-700 text-white"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Création en cours..." : "Créer le rallye"}

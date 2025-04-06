@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CrewTable } from "./CrewTable";
 import { Users, AlertCircle } from "lucide-react";
-import { Registration } from '@/types/registration.types';
+import { Registration, SafeRegistration } from '@/types/registration.types';
 
 export const CrewManager: React.FC = () => {
   const [selectedRally, setSelectedRally] = useState<string | null>(null);
@@ -49,13 +49,13 @@ export const CrewManager: React.FC = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Convert string status to union type
-      const typedRegistrations = data.map(reg => ({
+      // Convert to safe registrations to handle potential errors in the relations
+      const safeRegistrations = data.map(reg => ({
         ...reg,
         status: reg.status as "pending" | "approved" | "rejected"
-      })) as Registration[];
+      })) as SafeRegistration[];
       
-      return typedRegistrations;
+      return safeRegistrations;
     },
     enabled: true // Toujours activé pour montrer toutes les inscriptions si aucun rallye n'est sélectionné
   });
@@ -128,7 +128,7 @@ export const CrewManager: React.FC = () => {
                 Vous devez d'abord créer un rallye avant de pouvoir voir les équipages.
               </p>
               <Button
-                className="mt-4 bg-rally-red hover:bg-red-700"
+                className="mt-4 bg-rally-red hover:bg-red-700 text-white"
                 onClick={() => window.location.href = "/organizer/rally/new"}
               >
                 Créer un rallye
