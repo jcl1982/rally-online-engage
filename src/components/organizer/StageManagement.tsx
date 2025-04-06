@@ -23,10 +23,7 @@ export const StageManagement = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Épreuves Spéciales</h2>
-        <Button 
-          onClick={handleAddStage}
-          className="bg-rally-red hover:bg-red-700"
-        >
+        <Button onClick={handleAddStage}>
           <PlusCircle size={16} className="mr-2" /> Ajouter une épreuve
         </Button>
       </div>

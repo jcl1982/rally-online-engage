@@ -1,112 +1,235 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Stage, StageFormValues } from "@/types/stage.types";
+// Correction du service stage pour s'assurer que name et location sont toujours définis
 
-export const fetchStages = async (): Promise<Stage[]> => {
-  const { data, error } = await supabase.from("rally_stages").select("*");
-  
-  if (error) {
-    console.error("Error fetching stages:", error);
-    throw new Error("Failed to fetch stages");
-  }
-  
-  return data as Stage[];
-};
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export const fetchStagesByRallyId = async (rallyId: string): Promise<Stage[]> => {
-  const { data, error } = await supabase
-    .from("rally_stages")
-    .select("*")
-    .eq("rally_id", rallyId);
-  
-  if (error) {
-    console.error("Error fetching stages by rally ID:", error);
-    throw new Error(`Failed to fetch stages for rally ${rallyId}`);
-  }
-  
-  return data as Stage[];
-};
+// Type pour les valeurs du formulaire d'épreuve
+export interface StageFormValues {
+  name: string; // Always required
+  location: string; // Always required
+  description?: string;
+  distance: number;
+  difficulty_level?: string;
+  route_type?: string;
+  start_time?: string;
+  start_latitude?: number | null;
+  start_longitude?: number | null;
+  finish_latitude?: number | null;
+  finish_longitude?: number | null;
+  map_zoom_level?: number;
+  max_participants?: number;
+  stage_order?: number | null;
+  status?: 'planned' | 'active' | 'completed' | 'cancelled';
+}
 
-export const fetchStage = async (stageId: string): Promise<Stage> => {
-  const { data, error } = await supabase
-    .from("rally_stages")
-    .select("*")
-    .eq("id", stageId)
-    .single();
-  
-  if (error) {
-    console.error("Error fetching stage:", error);
-    throw new Error(`Failed to fetch stage ${stageId}`);
-  }
-  
-  return data as Stage;
-};
+export interface TimingPointFormValues {
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  point_type: string;
+  order_index: number;
+}
 
-export const createStage = async (
-  stageData: StageFormValues & { rally_id: string }
-): Promise<Stage> => {
-  // Ensure location is always defined
-  if (!stageData.location) {
-    stageData.location = "À déterminer";
-  }
-  
-  // Convert number values
-  const preparedData = {
-    ...stageData,
-    distance: Number(stageData.distance),
-    start_latitude: stageData.start_latitude ? Number(stageData.start_latitude) : null,
-    start_longitude: stageData.start_longitude ? Number(stageData.start_longitude) : null,
-    finish_latitude: stageData.finish_latitude ? Number(stageData.finish_latitude) : null,
-    finish_longitude: stageData.finish_longitude ? Number(stageData.finish_longitude) : null,
-    map_zoom_level: stageData.map_zoom_level ? Number(stageData.map_zoom_level) : null,
-    max_participants: stageData.max_participants ? Number(stageData.max_participants) : 100,
-  };
-  
-  const { data, error } = await supabase
-    .from("rally_stages")
-    .insert(preparedData)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error("Error creating stage:", error);
-    throw new Error("Failed to create stage");
-  }
-  
-  return data as Stage;
-};
+// Service pour gérer les opérations CRUD sur les épreuves
+export const stageService = {
+  // Récupérer toutes les épreuves d'un rallye
+  async getStagesByRallyId(rallyId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('stages')
+        .select('*')
+        .eq('rally_id', rallyId)
+        .order('created_at', { ascending: false });
 
-export const updateStage = async (stage: Stage): Promise<Stage> => {
-  // Ensure location is always defined
-  if (!stage.location) {
-    stage.location = "À déterminer";
-  }
-  
-  const { id, created_at, updated_at, ...stageData } = stage;
-  
-  const { data, error } = await supabase
-    .from("rally_stages")
-    .update(stageData)
-    .eq("id", id)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error("Error updating stage:", error);
-    throw new Error("Failed to update stage");
-  }
-  
-  return data as Stage;
-};
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error fetching stages:', error);
+      return { data: null, error: error.message };
+    }
+  },
 
-export const deleteStage = async (stageId: string): Promise<void> => {
-  const { error } = await supabase
-    .from("rally_stages")
-    .delete()
-    .eq("id", stageId);
-  
-  if (error) {
-    console.error("Error deleting stage:", error);
-    throw new Error("Failed to delete stage");
-  }
+  // Récupérer une épreuve par son ID
+  async getStageById(stageId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('stages')
+        .select('*')
+        .eq('id', stageId)
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error fetching stage:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Créer une nouvelle épreuve
+  async createStage(stageData: StageFormValues & { rally_id: string }) {
+    try {
+      // Ensure required fields are provided
+      if (!stageData.name || !stageData.location) {
+        throw new Error("Le nom et l'emplacement sont requis");
+      }
+
+      const { data, error } = await supabase
+        .from('stages')
+        .insert({
+          name: stageData.name,
+          location: stageData.location,
+          description: stageData.description,
+          distance: stageData.distance,
+          difficulty_level: stageData.difficulty_level,
+          route_type: stageData.route_type,
+          start_time: stageData.start_time,
+          start_latitude: stageData.start_latitude,
+          start_longitude: stageData.start_longitude,
+          finish_latitude: stageData.finish_latitude,
+          finish_longitude: stageData.finish_longitude,
+          map_zoom_level: stageData.map_zoom_level,
+          max_participants: stageData.max_participants,
+          stage_order: stageData.stage_order,
+          status: stageData.status || 'planned',
+          rally_id: stageData.rally_id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error creating stage:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Mettre à jour une épreuve existante
+  async updateStage(stageId: string, stageData: StageFormValues) {
+    try {
+      // Ensure required fields are provided
+      if (!stageData.name || !stageData.location) {
+        throw new Error("Le nom et l'emplacement sont requis");
+      }
+
+      const { data, error } = await supabase
+        .from('stages')
+        .update({
+          name: stageData.name,
+          location: stageData.location,
+          description: stageData.description,
+          distance: stageData.distance,
+          difficulty_level: stageData.difficulty_level,
+          route_type: stageData.route_type,
+          start_time: stageData.start_time,
+          start_latitude: stageData.start_latitude,
+          start_longitude: stageData.start_longitude,
+          finish_latitude: stageData.finish_latitude,
+          finish_longitude: stageData.finish_longitude,
+          map_zoom_level: stageData.map_zoom_level,
+          max_participants: stageData.max_participants,
+          stage_order: stageData.stage_order,
+          status: stageData.status,
+        })
+        .eq('id', stageId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error updating stage:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Supprimer une épreuve
+  async deleteStage(stageId: string) {
+    try {
+      const { error } = await supabase
+        .from('stages')
+        .delete()
+        .eq('id', stageId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error deleting stage:', error);
+      return { error: error.message };
+    }
+  },
+
+  // Récupérer tous les points de chronométrage pour une épreuve
+  async getTimingPointsByStageId(stageId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('timing_points')
+        .select('*')
+        .eq('stage_id', stageId)
+        .order('order_index', { ascending: true });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error fetching timing points:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Créer un nouveau point de chronométrage
+  async createTimingPoint(timingPointData: TimingPointFormValues & { stage_id: string }) {
+    try {
+      const { data, error } = await supabase
+        .from('timing_points')
+        .insert({
+          ...timingPointData,
+          stage_id: timingPointData.stage_id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error creating timing point:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Mettre à jour un point de chronométrage existant
+  async updateTimingPoint(pointId: string, timingPointData: TimingPointFormValues) {
+    try {
+      const { data, error } = await supabase
+        .from('timing_points')
+        .update({ ...timingPointData })
+        .eq('id', pointId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Error updating timing point:', error);
+      return { data: null, error: error.message };
+    }
+  },
+
+  // Supprimer un point de chronométrage
+  async deleteTimingPoint(pointId: string) {
+    try {
+      const { error } = await supabase
+        .from('timing_points')
+        .delete()
+        .eq('id', pointId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error deleting timing point:', error);
+      return { error: error.message };
+    }
+  },
 };

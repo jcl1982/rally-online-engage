@@ -58,7 +58,6 @@ export const StageForm: React.FC<StageFormProps> = ({
         <div className="flex justify-end">
           <Button 
             type="submit" 
-            className="bg-rally-red hover:bg-red-700"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Enregistrement..." : isEditMode ? "Mettre à jour" : "Ajouter"}

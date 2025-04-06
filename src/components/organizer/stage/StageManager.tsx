@@ -34,7 +34,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
         <h2 className="text-2xl font-bold">Liste des Épreuves</h2>
         <Button 
           onClick={openAddModal}
-          className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+          className="flex items-center gap-2"
         >
           <PlusCircle size={18} />
           Ajouter une épreuve

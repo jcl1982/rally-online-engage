@@ -45,7 +45,7 @@ const PersonalInfoForm = ({ onSubmitStep, initialData }: PersonalInfoFormProps) 
             <CoDriverFormSection />
 
             <div className="flex justify-end mt-6">
-              <Button type="submit" className="bg-rally-red hover:bg-red-700">
+              <Button type="submit">
                 Suivant: Véhicule
               </Button>
             </div>

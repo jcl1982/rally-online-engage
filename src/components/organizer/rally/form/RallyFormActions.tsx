@@ -20,7 +20,6 @@ export const RallyFormActions = ({ isSubmitting }: RallyFormActionsProps) => {
       </Button>
       <Button 
         type="submit" 
-        variant="rally"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Création en cours..." : "Créer le rallye"}

@@ -40,7 +40,7 @@ const RallyHeader = () => {
               <div className="flex items-center space-x-2">
                 {isOrganizer && (
                   <Button 
-                    variant="outline" 
+                    variant="header" 
                     size="sm"
                     onClick={() => navigate("/organizer")}
                   >
@@ -49,7 +49,7 @@ const RallyHeader = () => {
                   </Button>
                 )}
                 <Button 
-                  variant="outline" 
+                  variant="header" 
                   size="sm"
                   onClick={signOut}
                 >
@@ -58,7 +58,7 @@ const RallyHeader = () => {
               </div>
             ) : (
               <Button 
-                variant="outline" 
+                variant="header" 
                 size="sm"
                 onClick={() => navigate("/auth")}
               >
