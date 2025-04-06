@@ -77,7 +77,8 @@ export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanni
       }
       
       toast.success("Rallye créé avec succès !");
-      navigate("/organizer"); // Redirection vers le tableau de bord
+      // Redirection vers la page de gestion des épreuves du rallye créé
+      navigate(`/organizer/rally/${data.id}/stages`);
     } catch (error) {
       console.error("Erreur:", error);
       toast.error("Erreur lors de la création du rallye");
