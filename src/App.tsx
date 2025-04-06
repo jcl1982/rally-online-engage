@@ -10,7 +10,7 @@ import NotFound from "./pages/NotFound";
 import Registration from "./pages/Registration";
 import OrganizerStages from "./pages/OrganizerStages";
 import RallyDetails from "./pages/RallyDetails";
-import RallyPlanning from "./pages/RallyPlanning"; // Importation de la nouvelle page
+import RallyPlanning from "./pages/RallyPlanning";
 
 import "@/index.css";
 
@@ -20,46 +20,28 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth/*" element={<Auth />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/organizer"
-          element={
-            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
-              <Organizer />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/organizer/stages"
-          element={
-            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
-              <OrganizerStages />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/organizer/rally/new"
-          element={
-            <ProtectedRoute allowedRoles={["organizer", "admin"]}>
-              <RallyPlanning />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/registration"
-          element={
-            <ProtectedRoute>
-              <Registration />
-            </ProtectedRoute>
-          }
-        />
+        
+        {/* Protected routes with role requirements */}
+        <Route element={<ProtectedRoute requireOrganizer={true} />}>
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute requireOrganizer={true} />}>
+          <Route path="/organizer" element={<Organizer />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute requireOrganizer={true} />}>
+          <Route path="/organizer/stages" element={<OrganizerStages />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute requireOrganizer={true} />}>
+          <Route path="/organizer/rally/new" element={<RallyPlanning />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute />}>
+          <Route path="/registration" element={<Registration />} />
+        </Route>
+        
         <Route path="/rally/:id" element={<RallyDetails />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
