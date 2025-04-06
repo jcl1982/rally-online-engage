@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { StageTable } from "./StageTable";
+import StageTable from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
 
@@ -14,14 +14,14 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
   const {
     stages,
     isLoading,
-    currentStage,
     modalOpen,
+    currentStage,
+    defaultRally,
     openAddModal,
     openEditModal,
     closeModal,
     handleSubmit,
-    deleteStage,
-    defaultRally,
+    deleteStage
   } = useStagesManager(rallyId);
 
   console.log("StageManager - defaultRally:", defaultRally);

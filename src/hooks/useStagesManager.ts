@@ -8,14 +8,38 @@ import { Stage, StageFormValues } from "@/types/stage.types";
 
 export const useStagesManager = (rallyId?: string) => {
   const { 
-    isOpen: isModalOpen, 
-    openModal, 
-    closeModal,
-    selectedStage,
-    setSelectedStage
+    modalOpen, 
+    currentStage, 
+    openAddModal, 
+    openEditModal,
+    closeModal
   } = useStageModal();
   
   const queryClient = useQueryClient();
+
+  // Récupérer un rallye par défaut si aucun rallyId n'est fourni
+  const {
+    data: defaultRally,
+    isLoading: isLoadingDefaultRally
+  } = useQuery({
+    queryKey: ["default-rally"],
+    queryFn: async () => {
+      if (rallyId) return { id: rallyId };
+      
+      const { data, error } = await supabase
+        .from("rallies")
+        .select("id")
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Erreur lors de la récupération du rallye par défaut:", error);
+        return { id: null };
+      }
+
+      return data;
+    },
+  });
 
   // Récupérer les épreuves pour un rallye spécifique
   const {
@@ -25,19 +49,20 @@ export const useStagesManager = (rallyId?: string) => {
   } = useQuery({
     queryKey: ["stages", rallyId],
     queryFn: async () => {
-      if (!rallyId) {
+      const effectiveRallyId = rallyId || defaultRally?.id;
+      
+      if (!effectiveRallyId) {
         return [];
       }
       
-      console.log("Chargement des épreuves pour le rallye:", rallyId);
+      console.log("Chargement des épreuves pour le rallye:", effectiveRallyId);
       
       try {
         const { data, error } = await supabase
           .from("rally_stages")
           .select("*")
-          .eq("rally_id", rallyId)
-          .order("stage_order", { ascending: true, nullsLast: true })
-          .order("name");
+          .eq("rally_id", effectiveRallyId)
+          .order("stage_order", { ascending: true });
         
         if (error) {
           throw new Error(error.message);
@@ -50,20 +75,8 @@ export const useStagesManager = (rallyId?: string) => {
         throw err;
       }
     },
-    enabled: !!rallyId,
+    enabled: !!rallyId || !!defaultRally?.id,
   });
-
-  // Fonction pour ouvrir la modal d'ajout d'une nouvelle épreuve
-  const handleAddStage = () => {
-    setSelectedStage(null);
-    openModal();
-  };
-
-  // Fonction pour ouvrir la modal d'édition d'une épreuve existante
-  const handleEditStage = (stage: Stage) => {
-    setSelectedStage(stage);
-    openModal();
-  };
 
   // Ajouter une nouvelle épreuve
   const addStageMutation = useMutation({
@@ -165,23 +178,25 @@ export const useStagesManager = (rallyId?: string) => {
   const handleSubmit = async (stageData: StageFormValues) => {
     try {
       // S'assurer que rallyId est disponible
-      if (!rallyId) {
+      const effectiveRallyId = rallyId || defaultRally?.id;
+      
+      if (!effectiveRallyId) {
         toast.error("ID du rallye non disponible");
         return;
       }
       
       const completeStageData = {
         ...stageData,
-        rally_id: rallyId,
+        rally_id: effectiveRallyId,
       };
       
       console.log("Données à soumettre:", completeStageData);
       
-      if (selectedStage?.id) {
+      if (currentStage?.id) {
         // Mise à jour d'une épreuve existante
         await updateStageMutation.mutateAsync({
           ...completeStageData,
-          id: selectedStage.id,
+          id: currentStage.id,
         } as Stage);
       } else {
         // Ajout d'une nouvelle épreuve
@@ -196,15 +211,15 @@ export const useStagesManager = (rallyId?: string) => {
 
   return {
     stages,
-    isLoading,
+    isLoading: isLoading || isLoadingDefaultRally,
     error,
-    isModalOpen,
-    selectedStage,
-    openModal,
+    modalOpen,
+    currentStage,
+    openAddModal,
+    openEditModal,
     closeModal,
-    handleAddStage,
-    handleEditStage,
-    handleDeleteStage,
     handleSubmit,
+    defaultRally,
+    deleteStage: handleDeleteStage
   };
 };

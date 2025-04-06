@@ -55,8 +55,7 @@ export const StageModal: React.FC<StageModalProps> = ({
       difficulty_level: "medium",
       route_type: "mixed",
       max_participants: 100,
-      stage_order: 0,
-      rally_id: rallyId || "",
+      stage_order: 0
     },
   });
 
@@ -65,9 +64,7 @@ export const StageModal: React.FC<StageModalProps> = ({
       if (initialData) {
         console.log("Réinitialisation du formulaire avec:", initialData);
         form.reset({
-          ...initialData,
-          // Conserver le rallyId si fourni
-          rally_id: rallyId || initialData.rally_id,
+          ...initialData
         });
       } else {
         console.log("Réinitialisation du formulaire avec les valeurs par défaut");
@@ -80,20 +77,15 @@ export const StageModal: React.FC<StageModalProps> = ({
           difficulty_level: "medium",
           route_type: "mixed",
           max_participants: 100,
-          stage_order: 0,
-          rally_id: rallyId || "",
+          stage_order: 0
         });
       }
     }
-  }, [initialData, isOpen, form, rallyId]);
+  }, [initialData, isOpen, form]);
 
   const handleSubmit = (values: StageFormValues) => {
     console.log("Valeurs du formulaire avant soumission:", values);
-    // Assurez-vous que le rallyId est défini
-    onSubmit({
-      ...values,
-      rally_id: rallyId || values.rally_id,
-    });
+    onSubmit(values);
   };
 
   return (
