@@ -17,13 +17,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Stage } from "@/hooks/useStagesManager";
 
+// Schéma pour la validation des données d'une épreuve
 const stageSchema = z.object({
   name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
   location: z.string().min(3, { message: "La localisation doit contenir au moins 3 caractères" }),
   distance: z.coerce.number().min(0.1, { message: "La distance doit être supérieure à 0" }),
   description: z.string().optional(),
-  status: z.string(),
-  rally_id: z.string().uuid()
+  status: z.enum(["planned", "active", "completed"], {
+    required_error: "Le statut est requis",
+  }),
+  rally_id: z.string().optional()
 });
 
 type StageFormValues = z.infer<typeof stageSchema>;
@@ -51,7 +54,6 @@ export const StageModal: React.FC<StageModalProps> = ({
       distance: 0,
       description: "",
       status: "planned",
-      rally_id: "00000000-0000-0000-0000-000000000000" // Placeholder UUID
     },
   });
 
@@ -65,7 +67,6 @@ export const StageModal: React.FC<StageModalProps> = ({
         distance: 0,
         description: "",
         status: "planned",
-        rally_id: "00000000-0000-0000-0000-000000000000" // Placeholder UUID
       });
     }
   }, [initialData, form]);
@@ -135,6 +136,7 @@ export const StageModal: React.FC<StageModalProps> = ({
                       {...field}
                       placeholder="Description de l'épreuve"
                       rows={3}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />

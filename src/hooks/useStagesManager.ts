@@ -32,6 +32,25 @@ export const useStagesManager = () => {
   const [currentStage, setCurrentStage] = useState<Stage | null>(null);
   const queryClient = useQueryClient();
 
+  // Récupérer l'ID du premier rallye pour les tests
+  const { data: defaultRally } = useQuery({
+    queryKey: ["default-rally"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rallies")
+        .select("id")
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Erreur lors de la récupération du rallye par défaut:", error);
+        return { id: "00000000-0000-0000-0000-000000000000" }; // ID par défaut au format UUID
+      }
+
+      return data;
+    },
+  });
+
   // Récupérer la liste des épreuves
   const { data: stages = [], isLoading } = useQuery({
     queryKey: ["rally-stages"],
@@ -130,15 +149,21 @@ export const useStagesManager = () => {
     setCurrentStage(null);
   };
 
-  const handleSubmit = async (values: z.infer<typeof stageSchema>) => {
+  const handleSubmit = async (values: any) => {
     try {
+      // Assurez-vous que rally_id est défini
+      const stageData = {
+        ...values,
+        rally_id: values.rally_id || defaultRally?.id || "00000000-0000-0000-0000-000000000000"
+      };
+
       if (currentStage) {
         await updateStageMutation.mutateAsync({
-          ...values,
+          ...stageData,
           id: currentStage.id,
         } as Stage);
       } else {
-        await addStageMutation.mutateAsync(values as Omit<Stage, "id" | "created_at" | "updated_at">);
+        await addStageMutation.mutateAsync(stageData as Omit<Stage, "id" | "created_at" | "updated_at">);
       }
       closeModal();
     } catch (error) {
