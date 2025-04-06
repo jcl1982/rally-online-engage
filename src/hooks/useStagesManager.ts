@@ -11,8 +11,10 @@ const stageSchema = z.object({
   location: z.string().min(3, { message: "La localisation doit contenir au moins 3 caractères" }),
   distance: z.coerce.number().min(0.1, { message: "La distance doit être supérieure à 0" }),
   description: z.string().optional(),
-  status: z.string(),
-  rally_id: z.string().uuid()
+  status: z.enum(["planned", "active", "completed"], {
+    required_error: "Le statut est requis",
+  }),
+  rally_id: z.string().optional()
 });
 
 export type Stage = {
@@ -36,18 +38,23 @@ export const useStagesManager = () => {
   const { data: defaultRally } = useQuery({
     queryKey: ["default-rally"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("rallies")
-        .select("id")
-        .limit(1)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("rallies")
+          .select("id")
+          .limit(1)
+          .single();
 
-      if (error) {
-        console.error("Erreur lors de la récupération du rallye par défaut:", error);
-        return { id: "00000000-0000-0000-0000-000000000000" }; // ID par défaut au format UUID
+        if (error) {
+          console.error("Erreur lors de la récupération du rallye par défaut:", error);
+          return { id: "00000000-0000-0000-0000-000000000000" }; // ID par défaut au format UUID
+        }
+
+        return data;
+      } catch (error) {
+        console.error("Exception lors de la récupération du rallye par défaut:", error);
+        return { id: "00000000-0000-0000-0000-000000000000" };
       }
-
-      return data;
     },
   });
 
@@ -55,30 +62,42 @@ export const useStagesManager = () => {
   const { data: stages = [], isLoading } = useQuery({
     queryKey: ["rally-stages"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("rally_stages")
-        .select("*")
-        .order("name");
+      try {
+        const { data, error } = await supabase
+          .from("rally_stages")
+          .select("*")
+          .order("name");
 
-      if (error) {
+        if (error) {
+          toast.error("Erreur lors de la récupération des épreuves");
+          throw error;
+        }
+
+        return data as Stage[];
+      } catch (error) {
+        console.error("Exception lors de la récupération des épreuves:", error);
         toast.error("Erreur lors de la récupération des épreuves");
-        throw error;
+        return [];
       }
-
-      return data as Stage[];
     },
   });
 
   // Ajouter une nouvelle épreuve
   const addStageMutation = useMutation({
     mutationFn: async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
+      console.log("Données soumises pour l'ajout:", stageData);
+      
       const { data, error } = await supabase
         .from("rally_stages")
         .insert(stageData)
-        .select("id")
+        .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur lors de l'insertion:", error);
+        throw error;
+      }
+      
       return data;
     },
     onSuccess: () => {
@@ -94,12 +113,18 @@ export const useStagesManager = () => {
   // Mettre à jour une épreuve existante
   const updateStageMutation = useMutation({
     mutationFn: async ({ id, ...stageData }: Stage) => {
+      console.log("Données soumises pour la mise à jour:", { id, ...stageData });
+      
       const { error } = await supabase
         .from("rally_stages")
         .update(stageData)
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur lors de la mise à jour:", error);
+        throw error;
+      }
+      
       return { id, ...stageData };
     },
     onSuccess: () => {
@@ -151,23 +176,28 @@ export const useStagesManager = () => {
 
   const handleSubmit = async (values: any) => {
     try {
-      // Assurez-vous que rally_id est défini
+      // Assurez-vous que rally_id est défini et conservez une trace des valeurs
       const stageData = {
         ...values,
         rally_id: values.rally_id || defaultRally?.id || "00000000-0000-0000-0000-000000000000"
       };
+      
+      console.log("Données préparées pour soumission:", stageData);
 
       if (currentStage) {
+        // Mise à jour d'une épreuve existante
         await updateStageMutation.mutateAsync({
           ...stageData,
           id: currentStage.id,
         } as Stage);
       } else {
+        // Ajout d'une nouvelle épreuve
         await addStageMutation.mutateAsync(stageData as Omit<Stage, "id" | "created_at" | "updated_at">);
       }
       closeModal();
     } catch (error) {
       console.error("Erreur lors de l'opération:", error);
+      toast.error("Une erreur s'est produite lors de l'enregistrement de l'épreuve");
     }
   };
 
@@ -187,5 +217,6 @@ export const useStagesManager = () => {
     closeModal,
     handleSubmit,
     deleteStage,
+    defaultRally,
   };
 };

@@ -46,6 +46,8 @@ export const StageModal: React.FC<StageModalProps> = ({
   initialData,
   title
 }) => {
+  console.log("StageModal - initialData:", initialData);
+  
   const form = useForm<StageFormValues>({
     resolver: zodResolver(stageSchema),
     defaultValues: initialData || {
@@ -59,8 +61,10 @@ export const StageModal: React.FC<StageModalProps> = ({
 
   React.useEffect(() => {
     if (initialData) {
+      console.log("Réinitialisation du formulaire avec:", initialData);
       form.reset(initialData);
     } else {
+      console.log("Réinitialisation du formulaire avec les valeurs par défaut");
       form.reset({
         name: "",
         location: "",
@@ -72,6 +76,7 @@ export const StageModal: React.FC<StageModalProps> = ({
   }, [initialData, form]);
 
   const handleSubmit = (values: StageFormValues) => {
+    console.log("Valeurs du formulaire avant soumission:", values);
     onSubmit(values);
   };
 

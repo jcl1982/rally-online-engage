@@ -17,7 +17,11 @@ export const StageManager: React.FC = () => {
     closeModal,
     handleSubmit,
     deleteStage,
+    defaultRally,
   } = useStagesManager();
+
+  console.log("StageManager - defaultRally:", defaultRally);
+  console.log("StageManager - currentStage:", currentStage);
 
   return (
     <div className="space-y-6">
