@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
-import StageManagement from "@/components/organizer/StageManagement";
+import { StageManagement } from "@/components/organizer/StageManagement";
 import { useAuth } from "@/hooks/useAuth";
 
 const Organizer = () => {

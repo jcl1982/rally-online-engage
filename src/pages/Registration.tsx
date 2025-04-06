@@ -103,6 +103,14 @@ const Registration = () => {
     }
   };
 
+  const handleRestartRegistration = () => {
+    // Reset all form data and go back to step 1
+    setPersonalInfo(null);
+    setVehicleInfo(null);
+    setEquipmentInfo(null);
+    setCurrentStep(1);
+  };
+
   // Rendre le formulaire actuel en fonction de l'étape
   const renderCurrentStep = () => {
     switch (currentStep) {
@@ -137,6 +145,7 @@ const Registration = () => {
             equipmentInfo={equipmentInfo}
             rallyInfo={rally}
             onPrevStep={handlePrevStep}
+            onRestart={handleRestartRegistration}
             onSubmit={handleSubmitRegistration}
           />
         );

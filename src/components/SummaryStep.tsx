@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -10,25 +9,27 @@ interface SummaryProps {
   personalInfo: any;
   vehicleInfo: any;
   equipmentInfo: any;
+  rallyInfo: any;
   onPrevStep: () => void;
   onRestart: () => void;
+  onSubmit: () => void;
 }
 
 const SummaryStep = ({
   personalInfo,
   vehicleInfo,
   equipmentInfo,
+  rallyInfo,
   onPrevStep,
   onRestart,
+  onSubmit,
 }: SummaryProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmitRegistration = () => {
-    // Simuler l'envoi à un serveur
-    setTimeout(() => {
-      setIsSubmitted(true);
-      toast.success("Votre inscription a été soumise avec succès !");
-    }, 1000);
+    onSubmit();
+    setIsSubmitted(true);
+    toast.success("Votre inscription a été soumise avec succès !");
   };
 
   if (isSubmitted) {
@@ -46,7 +47,7 @@ const SummaryStep = ({
           Inscription confirmée !
         </h2>
         <p className="mb-8 text-gray-600">
-          Votre engagement au rallye a été enregistré avec succès. Vous recevrez
+          Votre engagement au rallye{rallyInfo ? ` ${rallyInfo.name}` : ''} a été enregistré avec succès. Vous recevrez
           prochainement un email de confirmation avec tous les détails.
         </p>
         <Button
@@ -71,7 +72,7 @@ const SummaryStep = ({
         <h3 className="rallyFormTitle">Récapitulatif de l'inscription</h3>
         <p className="text-gray-500 mb-6">
           Veuillez vérifier toutes les informations avant de soumettre votre
-          inscription.
+          inscription{rallyInfo ? ` pour le rallye ${rallyInfo.name}` : ''}.
         </p>
 
         <div className="mb-6">
