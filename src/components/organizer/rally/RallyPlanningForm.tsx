@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { rallySchema } from "@/schemas/rallySchema";
+import { rallySchema, RallyFormValues, rallyStatusEnum } from "@/schemas/rallySchema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { RallyBasicInfoFields } from "./form/RallyBasicInfoFields";
@@ -21,7 +21,7 @@ interface RallyPlanningFormProps {
 export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanningFormProps) => {
   const navigate = useNavigate();
   
-  const form = useForm({
+  const form = useForm<RallyFormValues>({
     resolver: zodResolver(rallySchema),
     defaultValues: {
       name: "",
@@ -35,7 +35,7 @@ export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanni
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: RallyFormValues) => {
     try {
       setIsSubmitting(true);
       console.log("Valeurs soumises:", values);

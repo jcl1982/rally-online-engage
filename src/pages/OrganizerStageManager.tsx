@@ -92,7 +92,7 @@ const OrganizerStageManager = () => {
             </p>
           </div>
 
-          <StageManager rallyId={rallyId} />
+          {rallyId && <StageManager rallyId={rallyId} />}
         </motion.div>
       </main>
       <RallyFooter />

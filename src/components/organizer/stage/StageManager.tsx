@@ -6,7 +6,11 @@ import { StageTable } from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
 
-export const StageManager: React.FC = () => {
+interface StageManagerProps {
+  rallyId?: string;
+}
+
+export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
   const {
     stages,
     isLoading,
@@ -22,6 +26,7 @@ export const StageManager: React.FC = () => {
 
   console.log("StageManager - defaultRally:", defaultRally);
   console.log("StageManager - currentStage:", currentStage);
+  console.log("StageManager - rallyId provided:", rallyId);
 
   return (
     <div className="space-y-6">
