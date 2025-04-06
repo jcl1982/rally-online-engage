@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -101,7 +102,8 @@ const Index = () => {
                 {profile?.role === "admin" && (
                   <Button 
                     onClick={handleAdminAccess} 
-                    className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+                    variant="rally"
+                    className="flex items-center gap-2"
                   >
                     <Shield size={18} />
                     Accès administration
@@ -111,7 +113,8 @@ const Index = () => {
                 {isOrganizer && (
                   <Button 
                     onClick={handleOrganizerAccess} 
-                    className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+                    variant="rally"
+                    className="flex items-center gap-2"
                   >
                     <Flag size={18} />
                     Espace Organisateur
@@ -154,7 +157,8 @@ const Index = () => {
                         <span>{rally.location}</span>
                       </div>
                       <Button 
-                        className="w-full bg-rally-red hover:bg-red-700"
+                        variant="rally"
+                        className="w-full"
                         onClick={() => navigate(`/rally/${rally.id}`)}
                       >
                         Détails

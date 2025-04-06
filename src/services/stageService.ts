@@ -44,9 +44,21 @@ export const fetchDefaultRally = async () => {
 export const addStage = async (stageData: StageFormValues & { rally_id: string }) => {
   console.log("Données soumises pour l'ajout:", stageData);
   
+  // S'assurer que les données ont les types corrects pour la base de données
+  const preparedData = {
+    ...stageData,
+    distance: Number(stageData.distance),
+    start_latitude: stageData.start_latitude ? Number(stageData.start_latitude) : null,
+    start_longitude: stageData.start_longitude ? Number(stageData.start_longitude) : null,
+    finish_latitude: stageData.finish_latitude ? Number(stageData.finish_latitude) : null,
+    finish_longitude: stageData.finish_longitude ? Number(stageData.finish_longitude) : null,
+    map_zoom_level: stageData.map_zoom_level ? Number(stageData.map_zoom_level) : null,
+    max_participants: stageData.max_participants ? Number(stageData.max_participants) : 100,
+  };
+  
   const { data, error } = await supabase
     .from("rally_stages")
-    .insert(stageData)
+    .insert(preparedData)
     .select()
     .single();
 
