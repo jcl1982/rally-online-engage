@@ -7,12 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Button } from "@/components/ui/button";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
-import Organizer from "./pages/Organizer";
-import RallyDetails from "./pages/RallyDetails";
+import Index from "@/pages/Index";
+import NotFound from "@/pages/NotFound";
+import Auth from "@/pages/Auth";
+import Admin from "@/pages/Admin";
+import Organizer from "@/pages/Organizer";
+import RallyDetails from "@/pages/RallyDetails";
+import Registration from "@/pages/Registration";
 
 const queryClient = new QueryClient();
 
@@ -30,13 +31,7 @@ const App = () => (
             
             {/* Routes protégées qui nécessitent l'authentification */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/registration" element={<div className="p-10 min-h-screen flex items-center justify-center flex-col">
-                <h1 className="text-3xl font-bold mb-4">Page d'engagement</h1>
-                <p className="text-gray-600 mb-6">Cette page est en cours de développement</p>
-                <Button onClick={() => window.history.back()} className="bg-rally-red hover:bg-red-700">
-                  Retourner à l'accueil
-                </Button>
-              </div>} />
+              <Route path="/registration" element={<Registration />} />
             </Route>
             
             <Route element={<ProtectedRoute requireOrganizer={true} />}>
