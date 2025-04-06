@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Stage } from "./useStageForm";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ export const useStagesManager = () => {
   const queryClient = useQueryClient();
 
   // Récupération des épreuves
-  const { data: stages = [] } = useQuery({
+  const { data: stages = [], isLoading } = useQuery({
     queryKey: ["stages"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -56,6 +56,7 @@ export const useStagesManager = () => {
         description: values.description || null,
         distance: Number(values.distance),
         status: values.status,
+        rally_id: currentStage?.rally_id || stages[0]?.rally_id || "default-rally-id",
       };
 
       if (currentStage) {
@@ -71,10 +72,7 @@ export const useStagesManager = () => {
         // Création d'une nouvelle épreuve
         const { error } = await supabase
           .from("rally_stages")
-          .insert({
-            ...stageData,
-            rally_id: stages[0]?.rally_id || "default-rally-id",
-          });
+          .insert(stageData);
 
         if (error) throw error;
         toast.success("Épreuve ajoutée avec succès");
@@ -109,6 +107,7 @@ export const useStagesManager = () => {
 
   return {
     stages,
+    isLoading,
     currentStage,
     modalOpen,
     openAddModal,

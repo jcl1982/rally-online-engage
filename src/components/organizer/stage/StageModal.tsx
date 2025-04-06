@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Stage } from "@/hooks/useStageForm";
 import { stageSchema } from "@/schemas/organizerStageSchema";
 import { StageFormFields } from "./StageFormFields";
+import { useState } from "react";
 
 interface StageModalProps {
   isOpen: boolean;
@@ -23,19 +24,39 @@ export const StageModal: React.FC<StageModalProps> = ({
   initialData,
   title,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm({
     resolver: zodResolver(stageSchema),
     defaultValues: {
       name: initialData?.name || "",
       location: initialData?.location || "",
       description: initialData?.description || "",
-      distance: initialData?.distance ? initialData?.distance.toString() : "0",
+      distance: initialData?.distance ? initialData?.distance.toString() : "",
       status: initialData?.status || "planned",
     },
   });
 
-  const handleSubmit = (values: any) => {
-    onSubmit(values);
+  // Reset form when initialData changes
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        name: initialData?.name || "",
+        location: initialData?.location || "",
+        description: initialData?.description || "",
+        distance: initialData?.distance ? initialData?.distance.toString() : "",
+        status: initialData?.status || "planned",
+      });
+    }
+  }, [form, initialData, isOpen]);
+
+  const handleSubmit = async (values: any) => {
+    try {
+      setIsSubmitting(true);
+      await onSubmit(values);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,8 +72,12 @@ export const StageModal: React.FC<StageModalProps> = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Annuler
               </Button>
-              <Button type="submit" className="bg-rally-red hover:bg-red-700">
-                {initialData ? "Mettre à jour" : "Ajouter"}
+              <Button 
+                type="submit" 
+                className="bg-rally-red hover:bg-red-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Enregistrement..." : initialData ? "Mettre à jour" : "Ajouter"}
               </Button>
             </div>
           </form>

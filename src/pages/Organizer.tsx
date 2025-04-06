@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { StageManager } from "@/components/organizer/stage/StageManager";

@@ -9,6 +9,112 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      organizer_spaces: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          organizer_id: number
+          space_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          organizer_id: number
+          space_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          organizer_id?: number
+          space_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_spaces_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: never
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
+      participant_spaces: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          participant_id: number
+          space_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          participant_id: number
+          space_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          participant_id?: number
+          space_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_spaces_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: never
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           blood_type: string | null

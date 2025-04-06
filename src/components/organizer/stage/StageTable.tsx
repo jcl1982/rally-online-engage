@@ -1,16 +1,9 @@
 
-import React from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Trash2 } from "lucide-react";
-import { Stage } from "@/hooks/useStageForm";
+import { Stage } from '@/hooks/useStageForm';
 
 interface StageTableProps {
   stages: Stage[];
@@ -18,64 +11,72 @@ interface StageTableProps {
   onDelete: (stageId: string) => void;
 }
 
-export const StageTable: React.FC<StageTableProps> = ({ 
-  stages, 
-  onEdit, 
-  onDelete 
-}) => {
+export const StageTable: React.FC<StageTableProps> = ({ stages, onEdit, onDelete }) => {
+  const formatDistance = (distance: number) => {
+    return `${distance.toFixed(2)} km`;
+  };
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'planned':
+        return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Planifiée</span>;
+      case 'active':
+        return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>;
+      case 'completed':
+        return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">Terminée</span>;
+      default:
+        return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">{status}</span>;
+    }
+  };
+
   return (
-    <div className="border rounded-md">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nom</TableHead>
-            <TableHead>Lieu</TableHead>
-            <TableHead>Distance (km)</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {stages.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                Aucune épreuve n'a été ajoutée
-              </TableCell>
-            </TableRow>
-          ) : (
-            stages.map((stage) => (
-              <TableRow key={stage.id}>
-                <TableCell className="font-medium">{stage.name}</TableCell>
-                <TableCell>{stage.location}</TableCell>
-                <TableCell>{stage.distance}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    stage.status === 'active' ? 'bg-green-100 text-green-800' : 
-                    stage.status === 'planned' ? 'bg-blue-100 text-blue-800' : 
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {stage.status === 'active' ? 'Active' : 
-                     stage.status === 'planned' ? 'Planifiée' : 'Terminée'}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(stage)}>
-                    <Edit size={16} />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => onDelete(stage.id)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </TableCell>
+    <div className="bg-white rounded-lg shadow">
+      {stages.length > 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nom</TableHead>
+                <TableHead>Localisation</TableHead>
+                <TableHead>Distance</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {stages.map((stage) => (
+                <TableRow key={stage.id}>
+                  <TableCell className="font-medium">{stage.name}</TableCell>
+                  <TableCell>{stage.location}</TableCell>
+                  <TableCell>{formatDistance(stage.distance)}</TableCell>
+                  <TableCell>{formatStatus(stage.status)}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onEdit(stage)}
+                    >
+                      <Edit size={16} className="mr-1" /> Modifier
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:bg-red-50"
+                      onClick={() => onDelete(stage.id)}
+                    >
+                      <Trash2 size={16} className="mr-1" /> Supprimer
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <div className="p-8 text-center text-gray-500">
+          Aucune épreuve trouvée. Ajoutez votre première épreuve en cliquant sur "Ajouter une épreuve".
+        </div>
+      )}
     </div>
   );
 };

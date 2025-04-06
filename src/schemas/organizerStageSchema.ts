@@ -1,20 +1,14 @@
 
 import * as z from "zod";
 
-export const statusOptions = [
-  { value: "planned", label: "Planifiée" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Terminée" },
-];
-
 export const stageSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  location: z.string().min(2, "Le lieu doit contenir au moins 2 caractères"),
-  distance: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "La distance doit être un nombre positif",
-  }),
+  name: z.string().min(1, "Le nom est requis"),
+  location: z.string().min(1, "La localisation est requise"),
   description: z.string().optional(),
-  status: z.enum(["planned", "active", "completed"]),
+  distance: z.coerce.number().min(0.01, "La distance doit être supérieure à 0"),
+  status: z.enum(["planned", "active", "completed"], {
+    required_error: "Le statut est requis",
+  }),
 });
 
 export type StageFormValues = z.infer<typeof stageSchema>;

@@ -5,11 +5,11 @@ import { PlusCircle } from "lucide-react";
 import { StageTable } from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
-import { Stage } from '@/hooks/useStageForm';
 
 export const StageManager: React.FC = () => {
   const {
     stages,
+    isLoading,
     currentStage,
     modalOpen,
     openAddModal,
@@ -32,11 +32,17 @@ export const StageManager: React.FC = () => {
         </Button>
       </div>
 
-      <StageTable 
-        stages={stages} 
-        onEdit={openEditModal} 
-        onDelete={deleteStage} 
-      />
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-rally-red"></div>
+        </div>
+      ) : (
+        <StageTable 
+          stages={stages} 
+          onEdit={openEditModal} 
+          onDelete={deleteStage} 
+        />
+      )}
 
       <StageModal
         isOpen={modalOpen}
