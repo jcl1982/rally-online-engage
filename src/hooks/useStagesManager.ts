@@ -1,61 +1,33 @@
 
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import * as z from "zod";
+import { useStageModal } from "./useStageModal";
+import { 
+  fetchStages, 
+  fetchDefaultRally, 
+  addStage, 
+  updateStage,
+  deleteStage as deleteStageService 
+} from "@/services/stageService";
+import { Stage, StageFormValues } from "@/types/stage.types";
 
-// Schéma pour la validation des données d'une épreuve
-const stageSchema = z.object({
-  name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-  location: z.string().min(3, { message: "La localisation doit contenir au moins 3 caractères" }),
-  distance: z.coerce.number().min(0.1, { message: "La distance doit être supérieure à 0" }),
-  description: z.string().optional(),
-  status: z.enum(["planned", "active", "completed"], {
-    required_error: "Le statut est requis",
-  }),
-  rally_id: z.string().optional()
-});
-
-export type Stage = {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-  description?: string;
-  status: "planned" | "active" | "completed";
-  rally_id: string;
-  created_at?: string;
-  updated_at?: string;
-};
+export { type Stage } from "@/types/stage.types";
 
 export const useStagesManager = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentStage, setCurrentStage] = useState<Stage | null>(null);
+  const { 
+    modalOpen, 
+    currentStage, 
+    openAddModal, 
+    openEditModal, 
+    closeModal 
+  } = useStageModal();
+  
   const queryClient = useQueryClient();
 
   // Récupérer l'ID du premier rallye pour les tests
   const { data: defaultRally } = useQuery({
     queryKey: ["default-rally"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("rallies")
-          .select("id")
-          .limit(1)
-          .single();
-
-        if (error) {
-          console.error("Erreur lors de la récupération du rallye par défaut:", error);
-          return { id: "00000000-0000-0000-0000-000000000000" }; // ID par défaut au format UUID
-        }
-
-        return data;
-      } catch (error) {
-        console.error("Exception lors de la récupération du rallye par défaut:", error);
-        return { id: "00000000-0000-0000-0000-000000000000" };
-      }
-    },
+    queryFn: fetchDefaultRally,
   });
 
   // Récupérer la liste des épreuves
@@ -63,19 +35,9 @@ export const useStagesManager = () => {
     queryKey: ["rally-stages"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("rally_stages")
-          .select("*")
-          .order("name");
-
-        if (error) {
-          toast.error("Erreur lors de la récupération des épreuves");
-          throw error;
-        }
-
-        return data as Stage[];
+        const data = await fetchStages();
+        return data;
       } catch (error) {
-        console.error("Exception lors de la récupération des épreuves:", error);
         toast.error("Erreur lors de la récupération des épreuves");
         return [];
       }
@@ -84,22 +46,7 @@ export const useStagesManager = () => {
 
   // Ajouter une nouvelle épreuve
   const addStageMutation = useMutation({
-    mutationFn: async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
-      console.log("Données soumises pour l'ajout:", stageData);
-      
-      const { data, error } = await supabase
-        .from("rally_stages")
-        .insert(stageData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Erreur lors de l'insertion:", error);
-        throw error;
-      }
-      
-      return data;
-    },
+    mutationFn: addStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
       toast.success("Épreuve ajoutée avec succès");
@@ -112,21 +59,7 @@ export const useStagesManager = () => {
 
   // Mettre à jour une épreuve existante
   const updateStageMutation = useMutation({
-    mutationFn: async ({ id, ...stageData }: Stage) => {
-      console.log("Données soumises pour la mise à jour:", { id, ...stageData });
-      
-      const { error } = await supabase
-        .from("rally_stages")
-        .update(stageData)
-        .eq("id", id);
-
-      if (error) {
-        console.error("Erreur lors de la mise à jour:", error);
-        throw error;
-      }
-      
-      return { id, ...stageData };
-    },
+    mutationFn: updateStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
       toast.success("Épreuve mise à jour avec succès");
@@ -139,15 +72,7 @@ export const useStagesManager = () => {
 
   // Supprimer une épreuve
   const deleteStageMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("rally_stages")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      return id;
-    },
+    mutationFn: deleteStageService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
       toast.success("Épreuve supprimée avec succès");
@@ -158,23 +83,7 @@ export const useStagesManager = () => {
     },
   });
 
-  // Fonctions pour gérer les actions sur les épreuves
-  const openAddModal = () => {
-    setCurrentStage(null);
-    setModalOpen(true);
-  };
-
-  const openEditModal = (stage: Stage) => {
-    setCurrentStage(stage);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setCurrentStage(null);
-  };
-
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: StageFormValues) => {
     try {
       // Assurez-vous que rally_id est défini et conservez une trace des valeurs
       const stageData = {

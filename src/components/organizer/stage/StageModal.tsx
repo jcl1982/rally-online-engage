@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -14,22 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Stage } from "@/hooks/useStagesManager";
-
-// Schéma pour la validation des données d'une épreuve
-const stageSchema = z.object({
-  name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
-  location: z.string().min(3, { message: "La localisation doit contenir au moins 3 caractères" }),
-  distance: z.coerce.number().min(0.1, { message: "La distance doit être supérieure à 0" }),
-  description: z.string().optional(),
-  status: z.enum(["planned", "active", "completed"], {
-    required_error: "Le statut est requis",
-  }),
-  rally_id: z.string().optional()
-});
-
-type StageFormValues = z.infer<typeof stageSchema>;
+import { Stage, stageSchema } from "@/types/stage.types";
+import type { StageFormValues } from "@/types/stage.types";
 
 interface StageModalProps {
   isOpen: boolean;
