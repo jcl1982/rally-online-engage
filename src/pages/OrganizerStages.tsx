@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { useNavigate } from "react-router-dom";
-import { StageManager } from "@/components/organizer/stage/StageManager";
+import { StageManagement } from "@/components/organizer/StageManagement";
 
 const OrganizerStages = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const OrganizerStages = () => {
             </p>
           </div>
 
-          <StageManager />
+          <StageManagement />
         </motion.div>
       </main>
       <RallyFooter />
