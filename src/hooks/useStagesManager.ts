@@ -1,11 +1,10 @@
 
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useStageModal } from "./useStageModal";
 import { supabase } from "@/integrations/supabase/client";
 import { Stage, StageFormValues } from "@/types/stage.types";
-
-export { type Stage } from "@/types/stage.types";
 
 export const useStagesManager = (rallyId?: string) => {
   const { 
@@ -67,7 +66,7 @@ export const useStagesManager = (rallyId?: string) => {
 
   // Ajouter une nouvelle épreuve
   const addStageMutation = useMutation({
-    mutationFn: async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
+    mutationFn: async (stageData: StageFormValues & { rally_id: string }) => {
       const { data, error } = await supabase
         .from("rally_stages")
         .insert(stageData)
@@ -157,7 +156,7 @@ export const useStagesManager = (rallyId?: string) => {
         } as Stage);
       } else {
         // Ajout d'une nouvelle épreuve
-        await addStageMutation.mutateAsync(stageData as Omit<Stage, "id" | "created_at" | "updated_at">);
+        await addStageMutation.mutateAsync(stageData as StageFormValues & { rally_id: string });
       }
       closeModal();
     } catch (error) {

@@ -42,12 +42,16 @@ export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanni
       
       // Convertir les dates en format ISO string pour Supabase
       const rallyData = {
-        ...values,
+        name: values.name,
+        location: values.location,
+        description: values.description || null,
         start_date: values.start_date.toISOString().split('T')[0],
         end_date: values.end_date.toISOString().split('T')[0],
         registration_deadline: values.registration_deadline 
           ? values.registration_deadline.toISOString().split('T')[0] 
           : null,
+        registration_open: values.registration_open,
+        status: values.status
       };
       
       const { data, error } = await supabase

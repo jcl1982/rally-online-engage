@@ -41,7 +41,7 @@ export const fetchDefaultRally = async () => {
   }
 };
 
-export const addStage = async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
+export const addStage = async (stageData: StageFormValues & { rally_id: string }) => {
   console.log("Données soumises pour l'ajout:", stageData);
   
   const { data, error } = await supabase
