@@ -3,32 +3,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
-
-interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  license_number?: string;
-}
-
-interface Vehicle {
-  id: string;
-  make: string;
-  model: string;
-  year: string;
-  registration_number: string;
-}
-
-interface Registration {
-  id: string;
-  status: "pending" | "approved" | "rejected";
-  rally_id: string;
-  driver: Profile;
-  co_driver?: Profile;
-  vehicle?: Vehicle;
-}
+import { Registration } from '@/types/registration.types';
 
 interface CrewTableProps {
   registrations: Registration[];
@@ -37,7 +12,7 @@ interface CrewTableProps {
 }
 
 export const CrewTable: React.FC<CrewTableProps> = ({ registrations, isLoading, rallyName }) => {
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: "pending" | "approved" | "rejected") => {
     switch (status) {
       case 'approved':
         return <Badge className="bg-green-100 text-green-800">Approuvé</Badge>;

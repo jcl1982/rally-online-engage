@@ -91,6 +91,7 @@ export const useStagesManager = (rallyId?: string) => {
         finish_longitude: stageData.finish_longitude ? Number(stageData.finish_longitude) : null,
         map_zoom_level: stageData.map_zoom_level ? Number(stageData.map_zoom_level) : null,
         max_participants: stageData.max_participants ? Number(stageData.max_participants) : 100,
+        location: stageData.location || "À déterminer", // Make sure location is always defined
       };
       
       const { data, error } = await supabase
@@ -118,6 +119,11 @@ export const useStagesManager = (rallyId?: string) => {
   // Mettre à jour une épreuve existante
   const updateStageMutation = useMutation({
     mutationFn: async ({ id, ...stageData }: Stage) => {
+      // Ensure location is set
+      if (!stageData.location) {
+        stageData.location = "À déterminer";
+      }
+      
       const { error } = await supabase
         .from("rally_stages")
         .update(stageData)
@@ -188,6 +194,7 @@ export const useStagesManager = (rallyId?: string) => {
       const completeStageData = {
         ...stageData,
         rally_id: effectiveRallyId,
+        location: stageData.location || "À déterminer", // Make sure location is always defined
       };
       
       console.log("Données à soumettre:", completeStageData);

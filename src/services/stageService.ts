@@ -3,48 +3,54 @@ import { supabase } from "@/integrations/supabase/client";
 import { Stage, StageFormValues } from "@/types/stage.types";
 
 export const fetchStages = async (): Promise<Stage[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("rally_stages")
-      .select("*")
-      .order("name");
-
-    if (error) {
-      console.error("Erreur lors de la récupération des épreuves:", error);
-      throw error;
-    }
-
-    return data as Stage[];
-  } catch (error) {
-    console.error("Exception lors de la récupération des épreuves:", error);
-    throw error;
-  }
-};
-
-export const fetchDefaultRally = async () => {
-  try {
-    const { data, error } = await supabase
-      .from("rallies")
-      .select("id")
-      .limit(1)
-      .single();
-
-    if (error) {
-      console.error("Erreur lors de la récupération du rallye par défaut:", error);
-      return { id: "00000000-0000-0000-0000-000000000000" }; // ID par défaut au format UUID
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Exception lors de la récupération du rallye par défaut:", error);
-    return { id: "00000000-0000-0000-0000-000000000000" };
-  }
-};
-
-export const addStage = async (stageData: StageFormValues & { rally_id: string }) => {
-  console.log("Données soumises pour l'ajout:", stageData);
+  const { data, error } = await supabase.from("rally_stages").select("*");
   
-  // S'assurer que les données ont les types corrects pour la base de données
+  if (error) {
+    console.error("Error fetching stages:", error);
+    throw new Error("Failed to fetch stages");
+  }
+  
+  return data as Stage[];
+};
+
+export const fetchStagesByRallyId = async (rallyId: string): Promise<Stage[]> => {
+  const { data, error } = await supabase
+    .from("rally_stages")
+    .select("*")
+    .eq("rally_id", rallyId);
+  
+  if (error) {
+    console.error("Error fetching stages by rally ID:", error);
+    throw new Error(`Failed to fetch stages for rally ${rallyId}`);
+  }
+  
+  return data as Stage[];
+};
+
+export const fetchStage = async (stageId: string): Promise<Stage> => {
+  const { data, error } = await supabase
+    .from("rally_stages")
+    .select("*")
+    .eq("id", stageId)
+    .single();
+  
+  if (error) {
+    console.error("Error fetching stage:", error);
+    throw new Error(`Failed to fetch stage ${stageId}`);
+  }
+  
+  return data as Stage;
+};
+
+export const createStage = async (
+  stageData: StageFormValues & { rally_id: string }
+): Promise<Stage> => {
+  // Ensure location is always defined
+  if (!stageData.location) {
+    stageData.location = "À déterminer";
+  }
+  
+  // Convert number values
   const preparedData = {
     ...stageData,
     distance: Number(stageData.distance),
@@ -61,37 +67,46 @@ export const addStage = async (stageData: StageFormValues & { rally_id: string }
     .insert(preparedData)
     .select()
     .single();
-
+  
   if (error) {
-    console.error("Erreur lors de l'insertion:", error);
-    throw error;
+    console.error("Error creating stage:", error);
+    throw new Error("Failed to create stage");
   }
   
-  return data;
+  return data as Stage;
 };
 
-export const updateStage = async ({ id, ...stageData }: Stage) => {
-  console.log("Données soumises pour la mise à jour:", { id, ...stageData });
+export const updateStage = async (stage: Stage): Promise<Stage> => {
+  // Ensure location is always defined
+  if (!stage.location) {
+    stage.location = "À déterminer";
+  }
   
-  const { error } = await supabase
+  const { id, created_at, updated_at, ...stageData } = stage;
+  
+  const { data, error } = await supabase
     .from("rally_stages")
     .update(stageData)
-    .eq("id", id);
-
+    .eq("id", id)
+    .select()
+    .single();
+  
   if (error) {
-    console.error("Erreur lors de la mise à jour:", error);
-    throw error;
+    console.error("Error updating stage:", error);
+    throw new Error("Failed to update stage");
   }
   
-  return { id, ...stageData };
+  return data as Stage;
 };
 
-export const deleteStage = async (id: string) => {
+export const deleteStage = async (stageId: string): Promise<void> => {
   const { error } = await supabase
     .from("rally_stages")
     .delete()
-    .eq("id", id);
-
-  if (error) throw error;
-  return id;
+    .eq("id", stageId);
+  
+  if (error) {
+    console.error("Error deleting stage:", error);
+    throw new Error("Failed to delete stage");
+  }
 };

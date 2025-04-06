@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CrewTable } from "./CrewTable";
 import { Users, AlertCircle } from "lucide-react";
+import { Registration } from '@/types/registration.types';
 
 export const CrewManager: React.FC = () => {
   const [selectedRally, setSelectedRally] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export const CrewManager: React.FC = () => {
   });
   
   // Récupérer les inscriptions avec les informations des participants
-  const { data: registrations, isLoading: isLoadingRegistrations } = useQuery({
+  const { data: registrationsData, isLoading: isLoadingRegistrations } = useQuery({
     queryKey: ["registrations", selectedRally],
     queryFn: async () => {
       const query = supabase
@@ -47,7 +48,14 @@ export const CrewManager: React.FC = () => {
         
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      
+      // Convert string status to union type
+      const typedRegistrations = data.map(reg => ({
+        ...reg,
+        status: reg.status as "pending" | "approved" | "rejected"
+      })) as Registration[];
+      
+      return typedRegistrations;
     },
     enabled: true // Toujours activé pour montrer toutes les inscriptions si aucun rallye n'est sélectionné
   });
@@ -99,13 +107,13 @@ export const CrewManager: React.FC = () => {
               </div>
               
               <TabsContent value="all" className="px-4 pb-4">
-                <CrewTable registrations={registrations || []} isLoading={isLoadingRegistrations} />
+                <CrewTable registrations={registrationsData || []} isLoading={isLoadingRegistrations} />
               </TabsContent>
               
               {rallies.map((rally) => (
                 <TabsContent key={rally.id} value={rally.id} className="px-4 pb-4">
                   <CrewTable 
-                    registrations={registrations?.filter(reg => reg.rally_id === rally.id) || []} 
+                    registrations={registrationsData?.filter(reg => reg.rally_id === rally.id) || []} 
                     isLoading={isLoadingRegistrations}
                     rallyName={rally.name}
                   />
