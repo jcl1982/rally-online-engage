@@ -39,8 +39,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Profile fetched:", data);
       setProfile(data);
       
+      // Fix: Access role property safely with type checking
+      let userRole = '';
+      if (data && typeof data === 'object' && 'role' in data) {
+        userRole = data.role as string;
+      }
+      
       // Définir isOrganizer basé sur le rôle récupéré
-      const userIsOrganizer = data?.role === 'organizer' || data?.role === 'admin';
+      const userIsOrganizer = userRole === 'organizer' || userRole === 'admin';
       setIsOrganizer(userIsOrganizer);
       console.log("User is organizer:", userIsOrganizer);
     } catch (error) {
