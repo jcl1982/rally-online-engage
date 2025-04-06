@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,33 +9,57 @@ import RallyFooter from "@/components/RallyFooter";
 import HeroSection from "@/components/HeroSection";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UpcomingRally {
+  id: string;
+  name: string;
+  location: string;
+  start_date: string;
+  end_date: string;
+  image?: string;
+}
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, isOrganizer, profile } = useAuth();
-  const [upcomingRallies, setUpcomingRallies] = useState([
-    {
-      id: 1,
-      name: "Rallye des Cévennes",
-      date: "12-14 Mai 2025",
-      location: "Montpellier, France",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 2,
-      name: "Rallye d'Antibes",
-      date: "24-26 Juin 2025",
-      location: "Antibes, France",
-      image: "/placeholder.svg",
-    },
-    {
-      id: 3,
-      name: "Rallye du Mont-Blanc",
-      date: "3-5 Août 2025",
-      location: "Chamonix, France",
-      image: "/placeholder.svg",
-    },
-  ]);
+  const [upcomingRallies, setUpcomingRallies] = useState<UpcomingRally[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUpcomingRallies = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from("upcoming_rallies")
+          .select("id, name, location, start_date, end_date")
+          .limit(3);
+
+        if (error) {
+          throw error;
+        }
+
+        // Format the data for display
+        const formattedRallies = data.map(rally => ({
+          id: rally.id,
+          name: rally.name,
+          location: rally.location,
+          start_date: rally.start_date,
+          end_date: rally.end_date,
+          image: "/placeholder.svg" // Default image for now
+        }));
+
+        setUpcomingRallies(formattedRallies);
+      } catch (error) {
+        console.error("Erreur lors du chargement des rallyes:", error);
+        toast.error("Impossible de charger les prochains rallyes");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUpcomingRallies();
+  }, []);
 
   const handleOrganizerAccess = () => {
     navigate("/organizer");
@@ -45,15 +70,21 @@ const Index = () => {
   };
   
   const handleStartRegistration = () => {
-    console.log("Registration button clicked");
     if (user) {
-      console.log("User is logged in, navigating to registration");
       navigate("/registration");
     } else {
-      console.log("User is not logged in, navigating to auth");
       toast("Veuillez vous connecter pour commencer votre engagement");
       navigate("/auth", { state: { from: "/registration" } });
     }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   return (
@@ -94,37 +125,50 @@ const Index = () => {
         <section className="bg-gray-50 py-16">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold mb-8 text-center">Prochains Rallyes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {upcomingRallies.map((rally) => (
-                <motion.div
-                  key={rally.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
-                  whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <img
-                    src={rally.image}
-                    alt={rally.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{rally.name}</h3>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <Calendar size={16} className="mr-2" />
-                      <span>{rally.date}</span>
+            {isLoading ? (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red"></div>
+              </div>
+            ) : upcomingRallies.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {upcomingRallies.map((rally) => (
+                  <motion.div
+                    key={rally.id}
+                    className="bg-white rounded-lg shadow-md overflow-hidden"
+                    whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <img
+                      src={rally.image || "/placeholder.svg"}
+                      alt={rally.name}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2">{rally.name}</h3>
+                      <div className="flex items-center text-gray-600 mb-2">
+                        <Calendar size={16} className="mr-2" />
+                        <span>{formatDate(rally.start_date)} - {formatDate(rally.end_date)}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600 mb-4">
+                        <MapPin size={16} className="mr-2" />
+                        <span>{rally.location}</span>
+                      </div>
+                      <Button 
+                        className="w-full bg-rally-red hover:bg-red-700"
+                        onClick={() => navigate(`/rally/${rally.id}`)}
+                      >
+                        Détails
+                        <ArrowRight size={16} className="ml-2" />
+                      </Button>
                     </div>
-                    <div className="flex items-center text-gray-600 mb-4">
-                      <MapPin size={16} className="mr-2" />
-                      <span>{rally.location}</span>
-                    </div>
-                    <Button className="w-full bg-rally-red hover:bg-red-700">
-                      Détails
-                      <ArrowRight size={16} className="ml-2" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-8 bg-white rounded-lg shadow">
+                <p className="text-gray-600">Aucun prochain rallye n'est actuellement prévu.</p>
+              </div>
+            )}
           </div>
         </section>
 

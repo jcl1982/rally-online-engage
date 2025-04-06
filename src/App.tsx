@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Organizer from "./pages/Organizer";
+import RallyDetails from "./pages/RallyDetails";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/rally/:id" element={<RallyDetails />} />
             
             {/* Routes protégées qui nécessitent l'authentification */}
             <Route element={<ProtectedRoute />}>

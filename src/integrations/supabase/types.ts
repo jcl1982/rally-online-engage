@@ -57,6 +57,7 @@ export type Database = {
           description: string | null
           end_date: string
           id: string
+          is_upcoming: boolean
           location: string
           name: string
           registration_deadline: string | null
@@ -70,6 +71,7 @@ export type Database = {
           description?: string | null
           end_date: string
           id?: string
+          is_upcoming?: boolean
           location: string
           name: string
           registration_deadline?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           description?: string | null
           end_date?: string
           id?: string
+          is_upcoming?: boolean
           location?: string
           name?: string
           registration_deadline?: string | null
@@ -153,6 +156,13 @@ export type Database = {
             referencedRelation: "rallies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "rally_stages_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "upcoming_rallies"
+            referencedColumns: ["id"]
+          },
         ]
       }
       registrations: {
@@ -192,6 +202,13 @@ export type Database = {
             columns: ["rally_id"]
             isOneToOne: false
             referencedRelation: "rallies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "upcoming_rallies"
             referencedColumns: ["id"]
           },
         ]
@@ -388,7 +405,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      upcoming_rallies: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string | null
+          is_upcoming: boolean | null
+          location: string | null
+          name: string | null
+          registration_deadline: string | null
+          registration_open: boolean | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_upcoming?: boolean | null
+          location?: string | null
+          name?: string | null
+          registration_deadline?: string | null
+          registration_open?: boolean | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_upcoming?: boolean | null
+          location?: string | null
+          name?: string | null
+          registration_deadline?: string | null
+          registration_open?: boolean | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_timing_point: {
