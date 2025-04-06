@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Registration from "./pages/Registration";
 import OrganizerStages from "./pages/OrganizerStages";
 import OrganizerStageManager from "./pages/OrganizerStageManager";
+import OrganizerCrews from "./pages/OrganizerCrews";
 import RallyDetails from "./pages/RallyDetails";
 import RallyPlanning from "./pages/RallyPlanning";
 
@@ -33,6 +34,10 @@ function App() {
         
         <Route element={<ProtectedRoute requireOrganizer={true} />}>
           <Route path="/organizer/stages" element={<OrganizerStages />} />
+        </Route>
+        
+        <Route element={<ProtectedRoute requireOrganizer={true} />}>
+          <Route path="/organizer/crews" element={<OrganizerCrews />} />
         </Route>
         
         <Route element={<ProtectedRoute requireOrganizer={true} />}>

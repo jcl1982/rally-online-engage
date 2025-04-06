@@ -7,7 +7,6 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 
 const Organizer = () => {
   const navigate = useNavigate();
@@ -73,7 +72,8 @@ const Organizer = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate("/organizer/crews")}>
               <CardHeader className="pb-2">
                 <Users className="h-6 w-6 text-rally-red mb-2" />
                 <CardTitle>Équipages</CardTitle>
@@ -84,7 +84,7 @@ const Organizer = () => {
               <CardContent>
                 <Button 
                   className="w-full bg-rally-red hover:bg-red-700"
-                  onClick={() => toast.info("Fonctionnalité en développement")}
+                  onClick={() => navigate("/organizer/crews")}
                 >
                   Voir les équipages
                 </Button>
