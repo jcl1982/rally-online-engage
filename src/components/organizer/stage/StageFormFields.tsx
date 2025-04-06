@@ -70,7 +70,7 @@ export const StageFormFields: React.FC<{ form: any }> = ({ form }) => {
                   min="0"
                   placeholder="0.00"
                   {...field}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
               </FormControl>
               <FormDescription>Distance en kilomètres</FormDescription>

@@ -142,6 +142,27 @@ export const StageModal: React.FC<StageModalProps> = ({
               )}
             />
             
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Statut</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    >
+                      <option value="planned">Planifiée</option>
+                      <option value="active">Active</option>
+                      <option value="completed">Terminée</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <div className="flex justify-end gap-4">
               <Button variant="outline" type="button" onClick={onClose}>
                 Annuler

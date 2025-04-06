@@ -1,135 +1,166 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
+import * as z from "zod";
 
-export interface Stage {
+// Schéma pour la validation des données d'une épreuve
+const stageSchema = z.object({
+  name: z.string().min(3, { message: "Le nom doit contenir au moins 3 caractères" }),
+  location: z.string().min(3, { message: "La localisation doit contenir au moins 3 caractères" }),
+  distance: z.coerce.number().min(0.1, { message: "La distance doit être supérieure à 0" }),
+  description: z.string().optional(),
+  status: z.string(),
+  rally_id: z.string().uuid()
+});
+
+export type Stage = {
   id: string;
   name: string;
   location: string;
   distance: number;
-  status: 'planned' | 'active' | 'completed';
   description?: string;
+  status: "planned" | "active" | "completed";
   rally_id: string;
-}
+  created_at?: string;
+  updated_at?: string;
+};
 
 export const useStagesManager = () => {
-  const [stages, setStages] = useState<Stage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Charger les épreuves
-  const loadStages = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Pour l'instant, on charge toutes les épreuves, plus tard on pourra filtrer par rallye
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentStage, setCurrentStage] = useState<Stage | null>(null);
+  const queryClient = useQueryClient();
+
+  // Récupérer la liste des épreuves
+  const { data: stages = [], isLoading } = useQuery({
+    queryKey: ["rally-stages"],
+    queryFn: async () => {
       const { data, error } = await supabase
-        .from('rally_stages')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      
-      setStages(data || []);
-    } catch (error: any) {
-      console.error("Erreur lors du chargement des épreuves:", error.message);
-      toast.error("Impossible de charger les épreuves");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Créer ou mettre à jour une épreuve
-  const saveStage = async (stage: Partial<Stage>): Promise<boolean> => {
-    try {
-      setIsSubmitting(true);
-      
-      // S'il y a un ID, on met à jour, sinon on crée
-      if (stage.id) {
-        // Update existing stage
-        const { error } = await supabase
-          .from('rally_stages')
-          .update({
-            name: stage.name,
-            location: stage.location,
-            distance: stage.distance,
-            status: stage.status,
-            description: stage.description,
-            rally_id: stage.rally_id,
-          })
-          .eq('id', stage.id);
-          
-        if (error) throw error;
-        toast.success("Épreuve mise à jour avec succès");
-      } else {
-        // Create new stage with all required fields
-        const newStage = {
-          name: stage.name || "",
-          location: stage.location || "",
-          distance: stage.distance || 0,
-          status: stage.status || 'planned',
-          description: stage.description,
-          rally_id: stage.rally_id || "default-rally-id", // Idéalement, sélectionner un rallye existant
-        };
-        
-        const { error } = await supabase
-          .from('rally_stages')
-          .insert([newStage]);
-          
-        if (error) throw error;
-        toast.success("Épreuve créée avec succès");
+        .from("rally_stages")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        toast.error("Erreur lors de la récupération des épreuves");
+        throw error;
       }
-      
-      // Recharger les épreuves
-      await loadStages();
-      return true;
-    } catch (error: any) {
-      console.error("Erreur lors de la sauvegarde de l'épreuve:", error.message);
-      toast.error("Erreur lors de la sauvegarde de l'épreuve");
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  // Supprimer une épreuve
-  const deleteStage = async (stageId: string): Promise<boolean> => {
-    try {
-      setIsSubmitting(true);
-      
-      const { error } = await supabase
-        .from('rally_stages')
-        .delete()
-        .eq('id', stageId);
-        
+
+      return data as Stage[];
+    },
+  });
+
+  // Ajouter une nouvelle épreuve
+  const addStageMutation = useMutation({
+    mutationFn: async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
+      const { data, error } = await supabase
+        .from("rally_stages")
+        .insert(stageData)
+        .select("id")
+        .single();
+
       if (error) throw error;
-      
-      // Mettre à jour la liste locale
-      setStages(stages.filter(stage => stage.id !== stageId));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
+      toast.success("Épreuve ajoutée avec succès");
+    },
+    onError: (error) => {
+      console.error("Erreur lors de l'ajout:", error);
+      toast.error("Erreur lors de l'ajout de l'épreuve");
+    },
+  });
+
+  // Mettre à jour une épreuve existante
+  const updateStageMutation = useMutation({
+    mutationFn: async ({ id, ...stageData }: Stage) => {
+      const { error } = await supabase
+        .from("rally_stages")
+        .update(stageData)
+        .eq("id", id);
+
+      if (error) throw error;
+      return { id, ...stageData };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
+      toast.success("Épreuve mise à jour avec succès");
+    },
+    onError: (error) => {
+      console.error("Erreur lors de la mise à jour:", error);
+      toast.error("Erreur lors de la mise à jour de l'épreuve");
+    },
+  });
+
+  // Supprimer une épreuve
+  const deleteStageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("rally_stages")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
       toast.success("Épreuve supprimée avec succès");
-      return true;
-    } catch (error: any) {
-      console.error("Erreur lors de la suppression de l'épreuve:", error.message);
+    },
+    onError: (error) => {
+      console.error("Erreur lors de la suppression:", error);
       toast.error("Erreur lors de la suppression de l'épreuve");
-      return false;
-    } finally {
-      setIsSubmitting(false);
+    },
+  });
+
+  // Fonctions pour gérer les actions sur les épreuves
+  const openAddModal = () => {
+    setCurrentStage(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (stage: Stage) => {
+    setCurrentStage(stage);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setCurrentStage(null);
+  };
+
+  const handleSubmit = async (values: z.infer<typeof stageSchema>) => {
+    try {
+      if (currentStage) {
+        await updateStageMutation.mutateAsync({
+          ...values,
+          id: currentStage.id,
+        } as Stage);
+      } else {
+        await addStageMutation.mutateAsync(values as Omit<Stage, "id" | "created_at" | "updated_at">);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Erreur lors de l'opération:", error);
     }
   };
-  
-  // Charger les épreuves au montage du composant
-  useEffect(() => {
-    loadStages();
-  }, []);
-  
+
+  const deleteStage = async (id: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette épreuve ?")) {
+      await deleteStageMutation.mutateAsync(id);
+    }
+  };
+
   return {
     stages,
     isLoading,
-    isSubmitting,
-    loadStages,
-    saveStage,
-    deleteStage
+    currentStage,
+    modalOpen,
+    openAddModal,
+    openEditModal,
+    closeModal,
+    handleSubmit,
+    deleteStage,
   };
 };

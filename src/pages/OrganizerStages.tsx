@@ -6,9 +6,28 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { useNavigate } from "react-router-dom";
 import { StageManager } from "@/components/organizer/stage/StageManager";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const OrganizerStages = () => {
   const navigate = useNavigate();
+  const { isOrganizer, isLoading } = useAuth();
+
+  // Rediriger si l'utilisateur n'est pas un organisateur
+  useEffect(() => {
+    if (!isLoading && !isOrganizer) {
+      navigate("/");
+    }
+  }, [isOrganizer, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red"></div>
+        <p className="mt-4 text-gray-600">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
