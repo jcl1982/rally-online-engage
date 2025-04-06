@@ -67,8 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Configurer l'écouteur de changement d'état d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      console.log("Auth state changed:", session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed, event:", event, "session:", session ? "exists" : "null");
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Vérifier la session actuelle
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session:", session);
+      console.log("Initial session:", session ? "exists" : "null");
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -102,12 +102,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    console.log("Attempting to sign out...");
+    setIsLoading(true);
+    
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Erreur lors de la déconnexion:", error);
+        toast.error("Erreur lors de la déconnexion");
+        throw error;
+      }
+      
+      console.log("Sign out successful");
+      
+      // Force reset local state since sometimes onAuthStateChange might not trigger immediately
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setIsOrganizer(false);
+      
       toast.success("Déconnexion réussie");
     } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-      toast.error("Erreur lors de la déconnexion");
+      console.error("Erreur critique lors de la déconnexion:", error);
+      toast.error("Erreur lors de la déconnexion, veuillez réessayer");
+    } finally {
+      setIsLoading(false);
     }
   };
 
