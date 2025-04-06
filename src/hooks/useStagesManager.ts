@@ -2,18 +2,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useStageModal } from "./useStageModal";
-import { 
-  fetchStages, 
-  fetchDefaultRally, 
-  addStage, 
-  updateStage,
-  deleteStage as deleteStageService 
-} from "@/services/stageService";
+import { supabase } from "@/integrations/supabase/client";
 import { Stage, StageFormValues } from "@/types/stage.types";
 
 export { type Stage } from "@/types/stage.types";
 
-export const useStagesManager = () => {
+export const useStagesManager = (rallyId?: string) => {
   const { 
     modalOpen, 
     currentStage, 
@@ -24,31 +18,66 @@ export const useStagesManager = () => {
   
   const queryClient = useQueryClient();
 
-  // Récupérer l'ID du premier rallye pour les tests
+  // Récupérer l'ID du premier rallye pour les tests si aucun ID n'est fourni
   const { data: defaultRally } = useQuery({
     queryKey: ["default-rally"],
-    queryFn: fetchDefaultRally,
+    queryFn: async () => {
+      if (rallyId) return { id: rallyId };
+      
+      const { data, error } = await supabase
+        .from("rallies")
+        .select("id")
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Erreur lors de la récupération du rallye par défaut:", error);
+        return { id: null };
+      }
+
+      return data;
+    },
+    enabled: !rallyId,
   });
 
-  // Récupérer la liste des épreuves
+  // Récupérer la liste des épreuves pour un rallye spécifique
   const { data: stages = [], isLoading } = useQuery({
-    queryKey: ["rally-stages"],
+    queryKey: ["rally-stages", rallyId || defaultRally?.id],
     queryFn: async () => {
+      const currentRallyId = rallyId || defaultRally?.id;
+      
+      if (!currentRallyId) {
+        return [];
+      }
+
       try {
-        const data = await fetchStages();
-        return data;
+        // Utilisez la fonction RPC pour obtenir les étapes d'un rallye
+        const { data, error } = await supabase
+          .rpc('get_rally_stages', { rally_id_param: currentRallyId });
+
+        if (error) throw error;
+        return data as Stage[];
       } catch (error) {
         toast.error("Erreur lors de la récupération des épreuves");
         return [];
       }
     },
+    enabled: !!rallyId || !!defaultRally?.id,
   });
 
   // Ajouter une nouvelle épreuve
   const addStageMutation = useMutation({
-    mutationFn: addStage,
+    mutationFn: async (stageData: Omit<Stage, "id" | "created_at" | "updated_at">) => {
+      const { data, error } = await supabase
+        .from("rally_stages")
+        .insert(stageData)
+        .select();
+
+      if (error) throw error;
+      return data[0];
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
+      queryClient.invalidateQueries({ queryKey: ["rally-stages", rallyId || defaultRally?.id] });
       toast.success("Épreuve ajoutée avec succès");
     },
     onError: (error) => {
@@ -59,9 +88,19 @@ export const useStagesManager = () => {
 
   // Mettre à jour une épreuve existante
   const updateStageMutation = useMutation({
-    mutationFn: updateStage,
+    mutationFn: async (stage: Stage) => {
+      const { id, created_at, updated_at, ...updateData } = stage;
+      const { data, error } = await supabase
+        .from("rally_stages")
+        .update(updateData)
+        .eq("id", id)
+        .select();
+
+      if (error) throw error;
+      return data[0];
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
+      queryClient.invalidateQueries({ queryKey: ["rally-stages", rallyId || defaultRally?.id] });
       toast.success("Épreuve mise à jour avec succès");
     },
     onError: (error) => {
@@ -72,9 +111,17 @@ export const useStagesManager = () => {
 
   // Supprimer une épreuve
   const deleteStageMutation = useMutation({
-    mutationFn: deleteStageService,
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("rally_stages")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return id;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rally-stages"] });
+      queryClient.invalidateQueries({ queryKey: ["rally-stages", rallyId || defaultRally?.id] });
       toast.success("Épreuve supprimée avec succès");
     },
     onError: (error) => {
@@ -85,10 +132,17 @@ export const useStagesManager = () => {
 
   const handleSubmit = async (values: StageFormValues) => {
     try {
-      // Assurez-vous que rally_id est défini et conservez une trace des valeurs
+      const currentRallyId = values.rally_id || rallyId || defaultRally?.id;
+      
+      if (!currentRallyId) {
+        toast.error("Impossible de déterminer le rallye associé");
+        return;
+      }
+      
+      // Assurez-vous que rally_id est défini
       const stageData = {
         ...values,
-        rally_id: values.rally_id || defaultRally?.id || "00000000-0000-0000-0000-000000000000"
+        rally_id: currentRallyId
       };
       
       console.log("Données préparées pour soumission:", stageData);
@@ -98,6 +152,8 @@ export const useStagesManager = () => {
         await updateStageMutation.mutateAsync({
           ...stageData,
           id: currentStage.id,
+          created_at: currentStage.created_at,
+          updated_at: new Date().toISOString()
         } as Stage);
       } else {
         // Ajout d'une nouvelle épreuve

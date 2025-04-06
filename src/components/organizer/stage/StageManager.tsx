@@ -22,7 +22,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
     handleSubmit,
     deleteStage,
     defaultRally,
-  } = useStagesManager();
+  } = useStagesManager(rallyId);
 
   console.log("StageManager - defaultRally:", defaultRally);
   console.log("StageManager - currentStage:", currentStage);
@@ -59,6 +59,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
         onSubmit={handleSubmit}
         initialData={currentStage}
         title={currentStage ? "Modifier l'épreuve" : "Ajouter une nouvelle épreuve"}
+        rallyId={rallyId || defaultRally?.id}
       />
     </div>
   );

@@ -206,14 +206,18 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          difficulty_level: string
           distance: number
           finish_latitude: number | null
           finish_longitude: number | null
           id: string
           location: string
           map_zoom_level: number | null
+          max_participants: number
           name: string
           rally_id: string
+          route_type: string
+          stage_order: number | null
           start_latitude: number | null
           start_longitude: number | null
           start_time: string | null
@@ -223,14 +227,18 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          difficulty_level?: string
           distance: number
           finish_latitude?: number | null
           finish_longitude?: number | null
           id?: string
           location: string
           map_zoom_level?: number | null
+          max_participants?: number
           name: string
           rally_id: string
+          route_type?: string
+          stage_order?: number | null
           start_latitude?: number | null
           start_longitude?: number | null
           start_time?: string | null
@@ -240,14 +248,18 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          difficulty_level?: string
           distance?: number
           finish_latitude?: number | null
           finish_longitude?: number | null
           id?: string
           location?: string
           map_zoom_level?: number | null
+          max_participants?: number
           name?: string
           rally_id?: string
+          route_type?: string
+          stage_order?: number | null
           start_latitude?: number | null
           start_longitude?: number | null
           start_time?: string | null
@@ -405,6 +417,48 @@ export type Database = {
           },
         ]
       }
+      stage_organizer_notes: {
+        Row: {
+          created_at: string
+          id: string
+          note: string
+          stage_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note: string
+          stage_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string
+          stage_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_organizer_notes_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "rally_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stage_organizer_notes_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "rally_stages_complete"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timing_points: {
         Row: {
           created_at: string
@@ -448,6 +502,13 @@ export type Database = {
             columns: ["stage_id"]
             isOneToOne: false
             referencedRelation: "rally_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timing_points_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "rally_stages_complete"
             referencedColumns: ["id"]
           },
         ]
@@ -511,6 +572,48 @@ export type Database = {
       }
     }
     Views: {
+      rally_stages_complete: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          distance: number | null
+          finish_latitude: number | null
+          finish_longitude: number | null
+          id: string | null
+          location: string | null
+          map_zoom_level: number | null
+          max_participants: number | null
+          name: string | null
+          rally_id: string | null
+          rally_name: string | null
+          rally_status: string | null
+          route_type: string | null
+          stage_order: number | null
+          start_latitude: number | null
+          start_longitude: number | null
+          start_time: string | null
+          status: string | null
+          timing_points_count: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rally_stages_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "rallies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rally_stages_rally_id_fkey"
+            columns: ["rally_id"]
+            isOneToOne: false
+            referencedRelation: "upcoming_rallies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       upcoming_rallies: {
         Row: {
           created_at: string | null
@@ -575,6 +678,32 @@ export type Database = {
           p_id: string
         }
         Returns: boolean
+      }
+      get_rally_stages: {
+        Args: {
+          rally_id_param: string
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          difficulty_level: string
+          distance: number
+          finish_latitude: number | null
+          finish_longitude: number | null
+          id: string
+          location: string
+          map_zoom_level: number | null
+          max_participants: number
+          name: string
+          rally_id: string
+          route_type: string
+          stage_order: number | null
+          start_latitude: number | null
+          start_longitude: number | null
+          start_time: string | null
+          status: string
+          updated_at: string
+        }[]
       }
       get_timing_points: {
         Args: {
