@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -54,7 +53,7 @@ const Auth = () => {
       setIsLoading(true);
       
       if (authMode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
@@ -62,9 +61,16 @@ const Auth = () => {
         if (error) throw error;
         
         toast.success("Connexion réussie");
-        navigate("/admin");
+        
+        // Redirection basée sur la présence d'un utilisateur authentifié
+        if (authData?.user) {
+          // Redirection avec un délai pour laisser le temps au toast d'être affiché
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: authData, error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
@@ -77,11 +83,24 @@ const Auth = () => {
 
         if (error) throw error;
         
-        toast.success("Inscription réussie! Veuillez vérifier votre email.");
+        if (authData?.user) {
+          toast.success("Inscription réussie! Un email de confirmation vous a été envoyé.");
+          // Redirection après inscription réussie
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        } else {
+          toast.info("Vérifiez votre email pour confirmer votre inscription.");
+        }
       }
     } catch (error: any) {
       console.error("Erreur d'authentification:", error);
-      toast.error(error.message || "Une erreur s'est produite");
+      const errorMessage = error.message === "Email not confirmed" 
+        ? "Email non confirmé. Veuillez vérifier votre boîte de réception."
+        : error.message === "Invalid login credentials" 
+          ? "Identifiants invalides. Vérifiez votre email et mot de passe."
+          : "Une erreur s'est produite lors de l'authentification.";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
