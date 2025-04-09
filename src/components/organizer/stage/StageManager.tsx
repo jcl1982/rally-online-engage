@@ -49,8 +49,8 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
         </div>
       ) : (
         <StageTable 
-          stages={stages} 
-          onEdit={openEditModal} 
+          stages={stages as Stage[]} 
+          onEdit={(stage) => openEditModal(stage as Stage)} 
           onDelete={deleteStage} 
         />
       )}

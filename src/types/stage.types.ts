@@ -22,9 +22,24 @@ export const stageSchema = z.object({
 
 export type StageFormValues = z.infer<typeof stageSchema>;
 
-export interface Stage extends StageFormValues {
+export interface Stage {
   id: string;
   rally_id: string;
+  name: string;
+  location: string;
+  description?: string | null;
+  distance: number;
+  start_time?: string | null;
+  status: "planned" | "active" | "completed" | "cancelled";
+  difficulty_level: "easy" | "medium" | "hard" | "expert";
+  route_type: "tarmac" | "gravel" | "snow" | "sand" | "mixed";
+  start_latitude?: number | null;
+  start_longitude?: number | null;
+  finish_latitude?: number | null;
+  finish_longitude?: number | null;
+  map_zoom_level?: number | null;
+  max_participants?: number | null;
+  stage_order?: number | null;
   created_at: string;
   updated_at: string;
 }
