@@ -8,7 +8,7 @@ import { useRallyStages } from "@/hooks/useRallyStages";
 import { Rally, validateRallyStatus } from "@/schemas/rallySchema";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
-import RallyActionBar from "@/components/organizer/rally/RallyActionBar";
+import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 import { StageManager } from "@/components/organizer/stage/StageManager";
 import { motion } from "framer-motion";
 
@@ -78,7 +78,7 @@ const OrganizerStageManager = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
-      <RallyActionBar rally={rally} currentTab="stages" />
+      <OrganizerNavigation rallyId={rallyId} currentSection="stages" />
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0 }}

@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { StageManagement } from "@/components/organizer/StageManagement";
+import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 
 const OrganizerStages = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
+      <OrganizerNavigation currentSection="stages" />
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0 }}

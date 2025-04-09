@@ -7,6 +7,7 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 
 const Organizer = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Organizer = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
+      <OrganizerNavigation showBackButton={false} />
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0 }}
@@ -45,7 +47,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700 text-white"
+                  className="w-full"
                   onClick={() => navigate("/organizer/stages")}
                 >
                   Gérer les épreuves
@@ -64,7 +66,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700 text-white"
+                  className="w-full"
                   onClick={() => navigate("/organizer/rally/new")}
                 >
                   Planifier un rallye
@@ -83,7 +85,7 @@ const Organizer = () => {
               </CardHeader>
               <CardContent>
                 <Button 
-                  className="w-full bg-rally-red hover:bg-red-700 text-white"
+                  className="w-full"
                   onClick={() => navigate("/organizer/crews")}
                 >
                   Voir les équipages
