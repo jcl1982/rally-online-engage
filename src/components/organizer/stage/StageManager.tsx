@@ -5,7 +5,7 @@ import { PlusCircle } from "lucide-react";
 import StageTable from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
-import { StageFormValues } from '@/schemas/organizerStageSchema';
+import { Stage, StageFormValues } from '@/schemas/organizerStageSchema';
 
 interface StageManagerProps {
   rallyId?: string;
@@ -25,9 +25,9 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
     deleteStage
   } = useStagesManager(rallyId);
 
-  console.log("StageManager - defaultRally:", defaultRally);
-  console.log("StageManager - currentStage:", currentStage);
-  console.log("StageManager - rallyId provided:", rallyId);
+  const onSubmit = (data: StageFormValues) => {
+    handleSubmit(data);
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +57,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
       <StageModal
         isOpen={modalOpen}
         onClose={closeModal}
-        onSubmit={(data: StageFormValues) => handleSubmit(data)}
+        onSubmit={onSubmit}
         initialData={currentStage ? {
           name: currentStage.name,
           location: currentStage.location,
@@ -67,8 +67,13 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
           start_time: currentStage.start_time,
           difficulty_level: currentStage.difficulty_level,
           route_type: currentStage.route_type,
-          map_zoom_level: currentStage.map_zoom_level || undefined,
-          max_participants: currentStage.max_participants || undefined
+          map_zoom_level: currentStage.map_zoom_level,
+          max_participants: currentStage.max_participants,
+          stage_order: currentStage.stage_order,
+          start_latitude: currentStage.start_latitude,
+          start_longitude: currentStage.start_longitude,
+          finish_latitude: currentStage.finish_latitude,
+          finish_longitude: currentStage.finish_longitude
         } : undefined}
         title={currentStage ? "Modifier l'épreuve" : "Ajouter une nouvelle épreuve"}
         rallyId={rallyId || defaultRally?.id}

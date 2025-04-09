@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Stage, StageFormValues, stageSchema } from "@/types/stage.types";
+import { StageFormValues, stageSchema } from "@/schemas/organizerStageSchema";
 import { 
   Select, 
   SelectContent, 
@@ -28,7 +28,7 @@ interface StageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (values: StageFormValues) => void;
-  initialData: Stage | null;
+  initialData?: StageFormValues;
   title: string;
   rallyId?: string;
 }
@@ -41,9 +41,6 @@ export const StageModal: React.FC<StageModalProps> = ({
   title,
   rallyId
 }) => {
-  console.log("StageModal - initialData:", initialData);
-  console.log("StageModal - rallyId:", rallyId);
-  
   const form = useForm<StageFormValues>({
     resolver: zodResolver(stageSchema),
     defaultValues: initialData || {
@@ -62,12 +59,10 @@ export const StageModal: React.FC<StageModalProps> = ({
   React.useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        console.log("Réinitialisation du formulaire avec:", initialData);
         form.reset({
           ...initialData
         });
       } else {
-        console.log("Réinitialisation du formulaire avec les valeurs par défaut");
         form.reset({
           name: "",
           location: "",
@@ -84,7 +79,6 @@ export const StageModal: React.FC<StageModalProps> = ({
   }, [initialData, isOpen, form]);
 
   const handleSubmit = (values: StageFormValues) => {
-    console.log("Valeurs du formulaire avant soumission:", values);
     onSubmit(values);
   };
 
@@ -265,6 +259,7 @@ export const StageModal: React.FC<StageModalProps> = ({
                         min="1" 
                         step="1" 
                         onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -286,6 +281,7 @@ export const StageModal: React.FC<StageModalProps> = ({
                         step="1" 
                         placeholder="0" 
                         onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormDescription>Ordre d'affichage des épreuves (0 = par défaut)</FormDescription>

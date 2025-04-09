@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { StageFormValues } from '@/schemas/organizerStageSchema';
 
-interface Stage {
+export interface Stage {
   id: string;
   rally_id: string;
   name: string; 
@@ -21,6 +21,7 @@ interface Stage {
   finish_longitude?: number | null;
   map_zoom_level?: number | null;
   max_participants?: number | null;
+  stage_order?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -134,6 +135,10 @@ export const useStagesManager = (rallyId?: string) => {
             map_zoom_level: data.map_zoom_level,
             max_participants: data.max_participants,
             stage_order: data.stage_order,
+            start_latitude: data.start_latitude,
+            start_longitude: data.start_longitude,
+            finish_latitude: data.finish_latitude,
+            finish_longitude: data.finish_longitude,
           })
           .eq('id', currentStage.id);
 
@@ -156,6 +161,10 @@ export const useStagesManager = (rallyId?: string) => {
             map_zoom_level: data.map_zoom_level,
             max_participants: data.max_participants,
             stage_order: data.stage_order,
+            start_latitude: data.start_latitude,
+            start_longitude: data.start_longitude,
+            finish_latitude: data.finish_latitude,
+            finish_longitude: data.finish_longitude,
           }]);
 
         if (error) throw error;

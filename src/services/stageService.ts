@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -7,8 +8,8 @@ export interface StageFormValues {
   location: string;
   description?: string;
   distance: number;
-  difficulty_level?: string;
-  route_type?: string;
+  difficulty_level?: 'easy' | 'medium' | 'hard' | 'expert';
+  route_type?: 'tarmac' | 'gravel' | 'snow' | 'sand' | 'mixed';
   start_time?: string;
   start_latitude?: number | null;
   start_longitude?: number | null;

@@ -19,6 +19,10 @@ export const stageSchema = z.object({
   map_zoom_level: z.number().optional().nullable(),
   max_participants: z.number().optional(),
   stage_order: z.number().optional().nullable(),
+  start_latitude: z.number().optional().nullable(),
+  start_longitude: z.number().optional().nullable(),
+  finish_latitude: z.number().optional().nullable(),
+  finish_longitude: z.number().optional().nullable(),
 });
 
 export type StageFormValues = z.infer<typeof stageSchema>;
