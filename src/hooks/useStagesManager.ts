@@ -1,23 +1,20 @@
 
-// Voici une version mise à jour du hook qui corrige les erreurs TypeScript
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 import { StageFormValues } from '@/schemas/organizerStageSchema';
 
 interface Stage {
   id: string;
   rally_id: string;
-  name: string; // Always required
-  location: string; // Always required
+  name: string; 
+  location: string; 
   description?: string;
   distance: number;
   start_time?: string;
   status: 'planned' | 'active' | 'completed' | 'cancelled';
-  difficulty_level?: string;
-  route_type?: string;
+  difficulty_level: 'easy' | 'medium' | 'hard' | 'expert';
+  route_type: 'tarmac' | 'gravel' | 'snow' | 'sand' | 'mixed';
   start_latitude?: number | null;
   start_longitude?: number | null;
   finish_latitude?: number | null;
@@ -31,7 +28,6 @@ interface Stage {
 interface Rally {
   id: string;
   name: string;
-  // autres propriétés
 }
 
 export const useStagesManager = (rallyId?: string) => {
@@ -46,7 +42,7 @@ export const useStagesManager = (rallyId?: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .select('*')
         .eq('rally_id', rallId)
         .order('created_at', { ascending: false });
@@ -125,9 +121,9 @@ export const useStagesManager = (rallyId?: string) => {
       if (currentStage) {
         // Mise à jour d'une étape existante
         const { error } = await supabase
-          .from('stages')
+          .from('rally_stages')
           .update({ 
-            name: data.name,  // Ensure these are always defined
+            name: data.name,
             location: data.location,
             description: data.description,
             distance: data.distance,
@@ -137,6 +133,7 @@ export const useStagesManager = (rallyId?: string) => {
             route_type: data.route_type,
             map_zoom_level: data.map_zoom_level,
             max_participants: data.max_participants,
+            stage_order: data.stage_order,
           })
           .eq('id', currentStage.id);
 
@@ -145,9 +142,9 @@ export const useStagesManager = (rallyId?: string) => {
       } else {
         // Création d'une nouvelle étape
         const { error } = await supabase
-          .from('stages')
+          .from('rally_stages')
           .insert([{ 
-            name: data.name,  // Ensure these are always defined
+            name: data.name,
             location: data.location,
             description: data.description,
             distance: data.distance,
@@ -158,6 +155,7 @@ export const useStagesManager = (rallyId?: string) => {
             route_type: data.route_type,
             map_zoom_level: data.map_zoom_level,
             max_participants: data.max_participants,
+            stage_order: data.stage_order,
           }]);
 
         if (error) throw error;
@@ -188,7 +186,7 @@ export const useStagesManager = (rallyId?: string) => {
 
     try {
       const { error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .delete()
         .eq('id', stageId);
 

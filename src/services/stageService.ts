@@ -1,13 +1,10 @@
-
-// Correction du service stage pour s'assurer que name et location sont toujours définis
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // Type pour les valeurs du formulaire d'épreuve
 export interface StageFormValues {
-  name: string; // Always required
-  location: string; // Always required
+  name: string;
+  location: string;
   description?: string;
   distance: number;
   difficulty_level?: string;
@@ -38,7 +35,7 @@ export const stageService = {
   async getStagesByRallyId(rallyId: string) {
     try {
       const { data, error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .select('*')
         .eq('rally_id', rallyId)
         .order('created_at', { ascending: false });
@@ -55,7 +52,7 @@ export const stageService = {
   async getStageById(stageId: string) {
     try {
       const { data, error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .select('*')
         .eq('id', stageId)
         .single();
@@ -77,7 +74,7 @@ export const stageService = {
       }
 
       const { data, error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .insert({
           name: stageData.name,
           location: stageData.location,
@@ -116,7 +113,7 @@ export const stageService = {
       }
 
       const { data, error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .update({
           name: stageData.name,
           location: stageData.location,
@@ -150,7 +147,7 @@ export const stageService = {
   async deleteStage(stageId: string) {
     try {
       const { error } = await supabase
-        .from('stages')
+        .from('rally_stages')
         .delete()
         .eq('id', stageId);
 

@@ -5,6 +5,7 @@ import { PlusCircle } from "lucide-react";
 import StageTable from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
+import { StageFormValues } from '@/schemas/organizerStageSchema';
 
 interface StageManagerProps {
   rallyId?: string;
@@ -56,8 +57,19 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
       <StageModal
         isOpen={modalOpen}
         onClose={closeModal}
-        onSubmit={handleSubmit}
-        initialData={currentStage}
+        onSubmit={(data: StageFormValues) => handleSubmit(data)}
+        initialData={currentStage ? {
+          name: currentStage.name,
+          location: currentStage.location,
+          description: currentStage.description || "",
+          distance: currentStage.distance,
+          status: currentStage.status,
+          start_time: currentStage.start_time,
+          difficulty_level: currentStage.difficulty_level,
+          route_type: currentStage.route_type,
+          map_zoom_level: currentStage.map_zoom_level || undefined,
+          max_participants: currentStage.max_participants || undefined
+        } : undefined}
         title={currentStage ? "Modifier l'épreuve" : "Ajouter une nouvelle épreuve"}
         rallyId={rallyId || defaultRally?.id}
       />
