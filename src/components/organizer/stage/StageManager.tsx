@@ -37,6 +37,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
         <Button 
           onClick={openAddModal}
           className="flex items-center gap-2"
+          variant="rally"
         >
           <PlusCircle size={18} />
           Ajouter une épreuve
