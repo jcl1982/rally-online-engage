@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Stage } from "@/types/stage.types";
+import { useState } from 'react';
+import { Stage } from '@/types/stage.types';
 
 export const useStageModal = () => {
   const [modalOpen, setModalOpen] = useState(false);
