@@ -5,7 +5,8 @@ import { PlusCircle } from "lucide-react";
 import StageTable from "./StageTable";
 import { StageModal } from "./StageModal";
 import { useStagesManager } from '@/hooks/useStagesManager';
-import { Stage, StageFormValues } from '@/schemas/organizerStageSchema';
+import { StageFormValues } from '@/schemas/organizerStageSchema';
+import { Stage } from '@/types/stage.types';
 
 interface StageManagerProps {
   rallyId?: string;
