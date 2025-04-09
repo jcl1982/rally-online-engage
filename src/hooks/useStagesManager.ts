@@ -3,28 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { StageFormValues } from '@/schemas/organizerStageSchema';
-
-export interface Stage {
-  id: string;
-  rally_id: string;
-  name: string; 
-  location: string; 
-  description?: string;
-  distance: number;
-  start_time?: string;
-  status: 'planned' | 'active' | 'completed' | 'cancelled';
-  difficulty_level: 'easy' | 'medium' | 'hard' | 'expert';
-  route_type: 'tarmac' | 'gravel' | 'snow' | 'sand' | 'mixed';
-  start_latitude?: number | null;
-  start_longitude?: number | null;
-  finish_latitude?: number | null;
-  finish_longitude?: number | null;
-  map_zoom_level?: number | null;
-  max_participants?: number | null;
-  stage_order?: number | null;
-  created_at: string;
-  updated_at: string;
-}
+import { Stage } from '@/types/stage.types';
 
 interface Rally {
   id: string;

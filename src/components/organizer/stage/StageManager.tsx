@@ -26,8 +26,8 @@ export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
     deleteStage
   } = useStagesManager(rallyId);
 
-  const onSubmit = (data: StageFormValues) => {
-    handleSubmit(data);
+  const onSubmit = async (data: StageFormValues) => {
+    await handleSubmit(data);
   };
 
   return (
