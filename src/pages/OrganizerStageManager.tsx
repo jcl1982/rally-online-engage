@@ -3,97 +3,77 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useRallyStages } from "@/hooks/useRallyStages";
-import { Rally, validateRallyStatus } from "@/schemas/rallySchema";
 import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
-import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 import { StageManager } from "@/components/organizer/stage/StageManager";
-import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Rally {
+  id: string;
+  name: string;
+}
 
 const OrganizerStageManager = () => {
   const { rallyId } = useParams<{ rallyId: string }>();
-  const navigate = useNavigate();
-  const { isOrganizer, isLoading: authLoading } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
   const [rally, setRally] = useState<Rally | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { profile, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
-  // Fetch the rally details
+  // Vérifier si l'utilisateur est un organisateur
   useEffect(() => {
-    const fetchRally = async () => {
+    if (!authLoading && profile && profile.role !== 'organizer' && profile.role !== 'admin') {
+      toast.error("Accès non autorisé");
+      navigate('/');
+    }
+  }, [profile, authLoading, navigate]);
+
+  // Récupérer les détails du rallye
+  useEffect(() => {
+    const fetchRallyDetails = async () => {
       if (!rallyId) return;
       
       try {
         setIsLoading(true);
         const { data, error } = await supabase
-          .from("rallies")
-          .select("*")
-          .eq("id", rallyId)
+          .from('rallies')
+          .select('id, name')
+          .eq('id', rallyId)
           .single();
-
-        if (error) throw error;
-        
-        // Ensure the status is properly typed
-        if (data) {
-          const validatedRally = {
-            ...data,
-            status: validateRallyStatus(data.status)
-          };
-          setRally(validatedRally);
+          
+        if (error) {
+          console.error("Erreur lors de la récupération du rallye:", error);
+          throw error;
         }
-      } catch (error) {
-        console.error("Error fetching rally details:", error);
-        toast.error("Impossible de charger les détails du rallye");
+
+        setRally(data);
+      } catch (error: any) {
+        console.error("Erreur:", error);
+        toast.error("Erreur lors du chargement du rallye");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchRally();
+    fetchRallyDetails();
   }, [rallyId]);
-
-  // Redirect if not an organizer
-  useEffect(() => {
-    if (!authLoading && !isOrganizer) {
-      navigate("/");
-    }
-  }, [isOrganizer, authLoading, navigate]);
-
-  // Show loading state
-  if (authLoading || isLoading || !rally) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <RallyHeader />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <div className="flex justify-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red"></div>
-          </div>
-        </main>
-        <RallyFooter />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
-      <OrganizerNavigation rallyId={rallyId} currentSection="stages" />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Gestion des Épreuves</h1>
-            <p className="text-gray-600 mt-1">
-              Ajoutez, modifiez ou supprimez les épreuves pour le rallye {rally.name}
-            </p>
+        {!isLoading && rally ? (
+          <>
+            <h1 className="text-3xl font-bold mb-6">
+              Épreuves du rallye: {rally.name}
+            </h1>
+            <StageManager rallyId={rallyId} />
+          </>
+        ) : (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red"></div>
           </div>
-
-          {rallyId && <StageManager rallyId={rallyId} />}
-        </motion.div>
+        )}
       </main>
       <RallyFooter />
     </div>

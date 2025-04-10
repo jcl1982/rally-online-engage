@@ -51,8 +51,13 @@ export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanni
           ? values.registration_deadline.toISOString().split('T')[0] 
           : null,
         registration_open: values.registration_open,
-        status: values.status
+        status: values.status,
+        // Ajouter is_upcoming pour les rallyes à venir
+        is_upcoming: values.status === 'upcoming' && new Date(values.start_date) > new Date()
       };
+      
+      // Logging pour débogage
+      console.log("Données à insérer:", rallyData);
       
       const { data, error } = await supabase
         .from('rallies')
@@ -68,9 +73,9 @@ export const RallyPlanningForm = ({ isSubmitting, setIsSubmitting }: RallyPlanni
       toast.success("Rallye créé avec succès !");
       // Redirection vers la page de gestion des épreuves du rallye créé
       navigate(`/organizer/rally/${data.id}/stages`);
-    } catch (error) {
-      console.error("Erreur:", error);
-      toast.error("Erreur lors de la création du rallye");
+    } catch (error: any) {
+      console.error("Erreur complète:", error);
+      toast.error(error.message || "Erreur lors de la création du rallye");
     } finally {
       setIsSubmitting(false);
     }
