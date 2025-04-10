@@ -31,7 +31,7 @@ export const useStagesManager = (rallyId?: string) => {
         .from('rally_stages')
         .select('*')
         .eq('rally_id', rallyId)
-        .order('stage_order', { ascending: true, nullsLast: true })
+        .order('stage_order', { ascending: true })
         .order('name', { ascending: true });
         
       if (error) {
