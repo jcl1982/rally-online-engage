@@ -7,6 +7,7 @@ import RallyHeader from "@/components/RallyHeader";
 import RallyFooter from "@/components/RallyFooter";
 import { StageManager } from "@/components/organizer/stage/StageManager";
 import { useAuth } from "@/hooks/useAuth";
+import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 
 interface Rally {
   id: string;
@@ -61,6 +62,7 @@ const OrganizerStageManager = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <RallyHeader />
+      <OrganizerNavigation rallyId={rallyId} currentSection="stages" />
       <main className="flex-grow container mx-auto px-4 py-8">
         {!isLoading && rally ? (
           <>

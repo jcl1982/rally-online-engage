@@ -1,84 +1,109 @@
 
-import React from 'react';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import StageTable from "./StageTable";
+import { supabase } from "@/integrations/supabase/client";
 import { StageModal } from "./StageModal";
-import { useStagesManager } from '@/hooks/useStagesManager';
-import { StageFormValues } from '@/schemas/organizerStageSchema';
-import { Stage } from '@/types/stage.types';
+import { StageTable } from "./StageTable";
+import { useStagesManager } from "@/hooks/useStagesManager";
+import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
+
+interface Stage {
+  id: string;
+  name: string;
+  location: string;
+  distance: number;
+  status: string;
+  rally_id: string;
+}
 
 interface StageManagerProps {
   rallyId?: string;
 }
 
-export const StageManager: React.FC<StageManagerProps> = ({ rallyId }) => {
-  const {
-    stages,
-    isLoading,
-    modalOpen,
-    currentStage,
-    defaultRally,
-    openAddModal,
-    openEditModal,
-    closeModal,
-    handleSubmit,
-    deleteStage
-  } = useStagesManager(rallyId);
+export const StageManager = ({ rallyId }: StageManagerProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStage, setEditingStage] = useState<Stage | null>(null);
+  const { stages, isLoading, fetchStages, createStage, updateStage, deleteStage } = useStagesManager(rallyId);
 
-  const onSubmit = async (data: StageFormValues) => {
-    await handleSubmit(data);
+  useEffect(() => {
+    if (rallyId) {
+      fetchStages();
+    }
+  }, [rallyId, fetchStages]);
+
+  const handleAddStage = () => {
+    setEditingStage(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditStage = (stage: Stage) => {
+    setEditingStage(stage);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteStage = async (stageId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette épreuve ?")) {
+      return;
+    }
+    
+    try {
+      await deleteStage(stageId);
+      toast.success("Épreuve supprimée avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'épreuve:", error);
+      toast.error("Erreur lors de la suppression de l'épreuve");
+    }
+  };
+
+  const handleSaveStage = async (stageData: any) => {
+    try {
+      if (editingStage) {
+        await updateStage(editingStage.id, stageData);
+        toast.success("Épreuve mise à jour avec succès");
+      } else {
+        await createStage(stageData);
+        toast.success("Épreuve créée avec succès");
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'épreuve:", error);
+      toast.error("Erreur lors de la sauvegarde de l'épreuve");
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Liste des Épreuves</h2>
-        <Button 
-          onClick={openAddModal}
-          className="flex items-center gap-2"
-          variant="rally"
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Gestion des Épreuves</h2>
+        <Button
+          onClick={handleAddStage}
+          className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
         >
-          <PlusCircle size={18} />
+          <Plus size={18} />
           Ajouter une épreuve
         </Button>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-rally-red"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rally-red"></div>
         </div>
       ) : (
         <StageTable 
-          stages={stages as Stage[]} 
-          onEdit={(stage) => openEditModal(stage as Stage)} 
-          onDelete={deleteStage} 
+          stages={stages} 
+          onEdit={handleEditStage} 
+          onDelete={handleDeleteStage}
         />
       )}
 
       <StageModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        onSubmit={onSubmit}
-        initialData={currentStage ? {
-          name: currentStage.name,
-          location: currentStage.location,
-          description: currentStage.description || "",
-          distance: currentStage.distance,
-          status: currentStage.status,
-          start_time: currentStage.start_time,
-          difficulty_level: currentStage.difficulty_level,
-          route_type: currentStage.route_type,
-          map_zoom_level: currentStage.map_zoom_level,
-          max_participants: currentStage.max_participants,
-          stage_order: currentStage.stage_order,
-          start_latitude: currentStage.start_latitude,
-          start_longitude: currentStage.start_longitude,
-          finish_latitude: currentStage.finish_latitude,
-          finish_longitude: currentStage.finish_longitude
-        } : undefined}
-        title={currentStage ? "Modifier l'épreuve" : "Ajouter une nouvelle épreuve"}
-        rallyId={rallyId || defaultRally?.id}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveStage}
+        stage={editingStage}
+        rallyId={rallyId || ""}
       />
     </div>
   );

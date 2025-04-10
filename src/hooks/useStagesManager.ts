@@ -1,37 +1,128 @@
 
-import { useRallyStagesList } from './useRallyStagesList';
-import { useStageModal } from './useStageModal';
-import { useStageCrud } from './useStageCrud';
-import { StageFormValues } from '@/schemas/organizerStageSchema';
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Stage {
+  id: string;
+  name: string;
+  location: string;
+  distance: number;
+  status: string;
+  rally_id: string;
+  description?: string;
+  start_time?: string;
+  difficulty_level?: string;
+  route_type?: string;
+  stage_order?: number;
+}
 
 export const useStagesManager = (rallyId?: string) => {
-  // Utiliser les hooks séparés
-  const { stages, isLoading, defaultRally, fetchStages } = useRallyStagesList(rallyId);
-  const { modalOpen, currentStage, openAddModal, openEditModal, closeModal } = useStageModal();
-  const { handleSubmit: submitStageForm, deleteStage } = useStageCrud({ 
-    rallyId, 
-    defaultRallyId: defaultRally?.id,
-    fetchStages 
-  });
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Wrapper pour la gestion des soumissions
-  const handleSubmit = async (data: StageFormValues) => {
-    const success = await submitStageForm(data, currentStage?.id);
-    if (success) {
-      closeModal();
+  const fetchStages = useCallback(async () => {
+    if (!rallyId) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .from('rally_stages')
+        .select('*')
+        .eq('rally_id', rallyId)
+        .order('stage_order', { ascending: true, nullsLast: true })
+        .order('name', { ascending: true });
+        
+      if (error) {
+        console.error("Erreur lors du chargement des épreuves:", error);
+        throw error;
+      }
+      
+      setStages(data || []);
+    } catch (error: any) {
+      console.error("Erreur complète:", error);
+      toast.error("Erreur lors du chargement des épreuves");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [rallyId]);
+
+  const createStage = async (stageData: Omit<Stage, 'id'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('rally_stages')
+        .insert({ ...stageData, rally_id: rallyId })
+        .select()
+        .single();
+        
+      if (error) {
+        console.error("Erreur lors de la création de l'épreuve:", error);
+        throw error;
+      }
+      
+      setStages(prevStages => [...prevStages, data]);
+      return data;
+    } catch (error: any) {
+      console.error("Erreur complète:", error);
+      throw error;
+    }
+  };
+
+  const updateStage = async (stageId: string, stageData: Partial<Stage>) => {
+    try {
+      const { data, error } = await supabase
+        .from('rally_stages')
+        .update(stageData)
+        .eq('id', stageId)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error("Erreur lors de la mise à jour de l'épreuve:", error);
+        throw error;
+      }
+      
+      setStages(prevStages => 
+        prevStages.map(stage => 
+          stage.id === stageId ? { ...stage, ...data } : stage
+        )
+      );
+      return data;
+    } catch (error: any) {
+      console.error("Erreur complète:", error);
+      throw error;
+    }
+  };
+
+  const deleteStage = async (stageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rally_stages')
+        .delete()
+        .eq('id', stageId);
+        
+      if (error) {
+        console.error("Erreur lors de la suppression de l'épreuve:", error);
+        throw error;
+      }
+      
+      setStages(prevStages => 
+        prevStages.filter(stage => stage.id !== stageId)
+      );
+      return true;
+    } catch (error: any) {
+      console.error("Erreur complète:", error);
+      throw error;
     }
   };
 
   return {
     stages,
     isLoading,
-    modalOpen,
-    currentStage,
-    defaultRally,
-    openAddModal,
-    openEditModal,
-    closeModal,
-    handleSubmit,
+    fetchStages,
+    createStage,
+    updateStage,
     deleteStage
   };
 };

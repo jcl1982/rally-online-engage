@@ -1,306 +1,287 @@
 
-import React from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { StageFormValues, stageSchema } from "@/schemas/organizerStageSchema";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { z } from "zod";
+
+interface Stage {
+  id: string;
+  name: string;
+  location: string;
+  distance: number;
+  description?: string;
+  status: string;
+  route_type?: string;
+  difficulty_level?: string;
+  stage_order?: number;
+}
 
 interface StageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values: StageFormValues) => void;
-  initialData?: StageFormValues;
-  title: string;
-  rallyId?: string;
+  onSave: (stageData: any) => void;
+  stage: Stage | null;
+  rallyId: string;
 }
 
-export const StageModal: React.FC<StageModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  initialData,
-  title,
-  rallyId
-}) => {
-  const form = useForm<StageFormValues>({
-    resolver: zodResolver(stageSchema),
-    defaultValues: initialData || {
-      name: "",
-      location: "",
-      distance: 0,
-      description: "",
-      status: "planned",
-      difficulty_level: "medium",
-      route_type: "mixed",
-      max_participants: 100,
-      stage_order: 0
-    },
+export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageModalProps) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    distance: "",
+    description: "",
+    status: "planned",
+    route_type: "mixed",
+    difficulty_level: "medium",
+    stage_order: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  React.useEffect(() => {
-    if (isOpen) {
-      if (initialData) {
-        form.reset({
-          ...initialData
-        });
-      } else {
-        form.reset({
-          name: "",
-          location: "",
-          distance: 0,
-          description: "",
-          status: "planned",
-          difficulty_level: "medium",
-          route_type: "mixed",
-          max_participants: 100,
-          stage_order: 0
-        });
-      }
+  useEffect(() => {
+    if (stage) {
+      setFormData({
+        name: stage.name || "",
+        location: stage.location || "",
+        distance: stage.distance ? String(stage.distance) : "",
+        description: stage.description || "",
+        status: stage.status || "planned",
+        route_type: stage.route_type || "mixed",
+        difficulty_level: stage.difficulty_level || "medium",
+        stage_order: stage.stage_order ? String(stage.stage_order) : "",
+      });
+    } else {
+      setFormData({
+        name: "",
+        location: "",
+        distance: "",
+        description: "",
+        status: "planned",
+        route_type: "mixed",
+        difficulty_level: "medium",
+        stage_order: "",
+      });
     }
-  }, [initialData, isOpen, form]);
+    setErrors({});
+  }, [stage, isOpen]);
 
-  const handleSubmit = (values: StageFormValues) => {
-    onSubmit(values);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when field is edited
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when field is edited
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const validationSchema = z.object({
+      name: z.string().min(1, "Le nom est requis"),
+      location: z.string().min(1, "Le lieu est requis"),
+      distance: z.string().min(1, "La distance est requise").refine(
+        (val) => !isNaN(Number(val)) && Number(val) > 0,
+        "La distance doit être un nombre positif"
+      ),
+      status: z.string().min(1, "Le statut est requis"),
+      route_type: z.string(),
+      difficulty_level: z.string(),
+      stage_order: z.string().refine(
+        (val) => val === "" || (!isNaN(Number(val)) && Number(val) >= 0),
+        "L'ordre doit être un nombre positif"
+      ),
+    });
+
+    try {
+      validationSchema.parse(formData);
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path) {
+            newErrors[err.path[0]] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    // Convert string values to appropriate types
+    const dataToSubmit = {
+      name: formData.name,
+      location: formData.location,
+      description: formData.description,
+      distance: parseFloat(formData.distance),
+      status: formData.status,
+      route_type: formData.route_type,
+      difficulty_level: formData.difficulty_level,
+      rally_id: rallyId,
+      stage_order: formData.stage_order ? parseInt(formData.stage_order) : null,
+    };
+
+    onSave(dataToSubmit);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{stage ? "Modifier l'épreuve" : "Ajouter une épreuve"}</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
+
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom de l'épreuve*</Label>
+              <Input
+                id="name"
                 name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom de l'épreuve</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="ES1 - Col de Turini" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="ES1 - Nom de l'épreuve"
               />
-              
-              <FormField
-                control={form.control}
+              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Lieu*</Label>
+              <Input
+                id="location"
                 name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Localisation</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Alpes-Maritimes, France" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Lieu de l'épreuve"
               />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Description de l'épreuve"
-                      rows={3}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="distance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Distance (km)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number" 
-                        step="0.1" 
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormDescription>Distance en kilomètres</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Statut</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un statut" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="planned">Planifiée</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="completed">Terminée</SelectItem>
-                        <SelectItem value="cancelled">Annulée</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="difficulty_level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Niveau de difficulté</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un niveau" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="easy">Facile</SelectItem>
-                        <SelectItem value="medium">Moyen</SelectItem>
-                        <SelectItem value="hard">Difficile</SelectItem>
-                        <SelectItem value="expert">Expert</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="route_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type de parcours</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="tarmac">Asphalte</SelectItem>
-                        <SelectItem value="gravel">Gravier</SelectItem>
-                        <SelectItem value="snow">Neige</SelectItem>
-                        <SelectItem value="sand">Sable</SelectItem>
-                        <SelectItem value="mixed">Mixte</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="distance">Distance (km)*</Label>
+                <Input
+                  id="distance"
+                  name="distance"
+                  value={formData.distance}
+                  onChange={handleChange}
+                  placeholder="0.0"
+                  type="number"
+                  step="0.1"
+                />
+                {errors.distance && <p className="text-sm text-red-500">{errors.distance}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="stage_order">Ordre</Label>
+                <Input
+                  id="stage_order"
+                  name="stage_order"
+                  value={formData.stage_order}
+                  onChange={handleChange}
+                  placeholder="1"
+                  type="number"
+                />
+                {errors.stage_order && <p className="text-sm text-red-500">{errors.stage_order}</p>}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="max_participants"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre maximum de participants</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number" 
-                        min="1" 
-                        step="1" 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="stage_order"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ordre d'affichage</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number" 
-                        min="0" 
-                        step="1" 
-                        placeholder="0" 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>Ordre d'affichage des épreuves (0 = par défaut)</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="status">Statut</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange("status", value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Sélectionner un statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">Planifiée</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Terminée</SelectItem>
+                    <SelectItem value="cancelled">Annulée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="difficulty_level">Niveau de difficulté</Label>
+                <Select
+                  value={formData.difficulty_level}
+                  onValueChange={(value) => handleSelectChange("difficulty_level", value)}
+                >
+                  <SelectTrigger id="difficulty_level">
+                    <SelectValue placeholder="Sélectionner un niveau" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Facile</SelectItem>
+                    <SelectItem value="medium">Moyen</SelectItem>
+                    <SelectItem value="hard">Difficile</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="route_type">Type de route</Label>
+              <Select
+                value={formData.route_type}
+                onValueChange={(value) => handleSelectChange("route_type", value)}
+              >
+                <SelectTrigger id="route_type">
+                  <SelectValue placeholder="Sélectionner un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tarmac">Asphalte</SelectItem>
+                  <SelectItem value="gravel">Terre</SelectItem>
+                  <SelectItem value="mixed">Mixte</SelectItem>
+                  <SelectItem value="snow">Neige</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Description de l'épreuve..."
+                rows={3}
               />
             </div>
-            
-            <div className="flex justify-end gap-4 pt-4">
-              <Button variant="outline" type="button" onClick={onClose}>
-                Annuler
-              </Button>
-              <Button type="submit" className="bg-rally-red hover:bg-red-700">
-                {initialData ? "Mettre à jour" : "Ajouter"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button type="submit" className="bg-rally-red hover:bg-red-700">
+              {stage ? "Mettre à jour" : "Ajouter"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
