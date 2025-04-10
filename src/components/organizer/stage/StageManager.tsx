@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StageModal } from "./StageModal";
 import { StageTable } from "./StageTable";
 import { useStagesManager } from "@/hooks/useStagesManager";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Stage {
   id: string;
@@ -30,8 +31,8 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
 
   // Récupération des rallyes disponibles si aucun n'est fourni
   useEffect(() => {
-    if (!rallyId) {
-      const fetchRallies = async () => {
+    const fetchRallies = async () => {
+      try {
         const { data, error } = await supabase
           .from('rallies')
           .select('id, name')
@@ -45,14 +46,17 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
         
         if (data && data.length > 0) {
           setAvailableRallies(data);
-          if (!selectedRallyId) {
+          if (!selectedRallyId && data.length > 0) {
             setSelectedRallyId(data[0].id);
           }
         }
-      };
+      } catch (error) {
+        console.error("Erreur lors du chargement des rallyes:", error);
+        toast.error("Erreur lors du chargement des rallyes");
+      }
+    };
       
-      fetchRallies();
-    }
+    fetchRallies();
   }, [rallyId, selectedRallyId]);
 
   // Charger les épreuves quand le rally change
@@ -93,21 +97,16 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
   const handleSaveStage = async (stageData: any) => {
     try {
       // S'assurer que le rally_id est défini
-      if (!selectedRallyId) {
+      if (!stageData.rally_id) {
         toast.error("Aucun rallye sélectionné");
         return;
       }
       
-      const dataWithRallyId = {
-        ...stageData,
-        rally_id: selectedRallyId
-      };
-      
       if (editingStage) {
-        await updateStage(editingStage.id, dataWithRallyId);
+        await updateStage(editingStage.id, stageData);
         toast.success("Épreuve mise à jour avec succès");
       } else {
-        await createStage(dataWithRallyId);
+        await createStage(stageData);
         toast.success("Épreuve créée avec succès");
       }
       setIsModalOpen(false);
@@ -122,31 +121,35 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Gestion des Épreuves</h2>
         
-        {!rallyId && availableRallies.length > 0 && (
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <span>Rallye :</span>
-            <select 
-              className="border rounded px-2 py-1"
-              value={selectedRallyId}
-              onChange={(e) => handleRallyChange(e.target.value)}
+            <Select 
+              value={selectedRallyId || ""}
+              onValueChange={handleRallyChange}
             >
-              {availableRallies.map((rally) => (
-                <option key={rally.id} value={rally.id}>
-                  {rally.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Sélectionner un rallye" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableRallies.map((rally) => (
+                  <SelectItem key={rally.id} value={rally.id}>
+                    {rally.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
-        
-        <Button
-          onClick={handleAddStage}
-          className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
-          disabled={!selectedRallyId}
-        >
-          <Plus size={18} />
-          Ajouter une épreuve
-        </Button>
+          
+          <Button
+            onClick={handleAddStage}
+            className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+            disabled={!selectedRallyId}
+          >
+            <Plus size={18} />
+            Ajouter une épreuve
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

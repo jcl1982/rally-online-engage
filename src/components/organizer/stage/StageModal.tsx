@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 interface Stage {
@@ -38,8 +39,32 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
     route_type: "mixed",
     difficulty_level: "medium",
     stage_order: "",
+    rally_id: rallyId
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [rallies, setRallies] = useState<{id: string, name: string}[]>([]);
+
+  // Charger les rallyes disponibles
+  useEffect(() => {
+    const fetchRallies = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('rallies')
+          .select('id, name')
+          .order('name', { ascending: true });
+          
+        if (error) throw error;
+        
+        if (data) {
+          setRallies(data);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des rallyes:", error);
+      }
+    };
+    
+    fetchRallies();
+  }, []);
 
   useEffect(() => {
     if (stage) {
@@ -52,6 +77,7 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
         route_type: stage.route_type || "mixed",
         difficulty_level: stage.difficulty_level || "medium",
         stage_order: stage.stage_order ? String(stage.stage_order) : "",
+        rally_id: rallyId
       });
     } else {
       setFormData({
@@ -63,10 +89,11 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
         route_type: "mixed",
         difficulty_level: "medium",
         stage_order: "",
+        rally_id: rallyId
       });
     }
     setErrors({});
-  }, [stage, isOpen]);
+  }, [stage, isOpen, rallyId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -100,6 +127,7 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
         (val) => val === "" || (!isNaN(Number(val)) && Number(val) >= 0),
         "L'ordre doit être un nombre positif"
       ),
+      rally_id: z.string().min(1, "Un rallye doit être sélectionné"),
     });
 
     try {
@@ -135,7 +163,7 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
       status: formData.status,
       route_type: formData.route_type,
       difficulty_level: formData.difficulty_level,
-      rally_id: rallyId,
+      rally_id: formData.rally_id,
       stage_order: formData.stage_order ? parseInt(formData.stage_order) : null,
     };
 
@@ -161,6 +189,26 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
                 placeholder="ES1 - Nom de l'épreuve"
               />
               {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="rally_id">Rallye*</Label>
+              <Select
+                value={formData.rally_id}
+                onValueChange={(value) => handleSelectChange("rally_id", value)}
+              >
+                <SelectTrigger id="rally_id">
+                  <SelectValue placeholder="Sélectionner un rallye" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rallies.map((rally) => (
+                    <SelectItem key={rally.id} value={rally.id}>
+                      {rally.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.rally_id && <p className="text-sm text-red-500">{errors.rally_id}</p>}
             </div>
 
             <div className="space-y-2">
