@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { StageModal } from "./StageModal";
 import { StageTable } from "./StageTable";
 import { useStagesManager } from "@/hooks/useStagesManager";
-import OrganizerNavigation from "@/components/navigation/OrganizerNavigation";
 
 interface Stage {
   id: string;
@@ -25,13 +24,47 @@ interface StageManagerProps {
 export const StageManager = ({ rallyId }: StageManagerProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
-  const { stages, isLoading, fetchStages, createStage, updateStage, deleteStage } = useStagesManager(rallyId);
+  const [selectedRallyId, setSelectedRallyId] = useState<string | undefined>(rallyId);
+  const [availableRallies, setAvailableRallies] = useState<{ id: string; name: string }[]>([]);
+  const { stages, isLoading, fetchStages, createStage, updateStage, deleteStage } = useStagesManager(selectedRallyId);
 
+  // Récupération des rallyes disponibles si aucun n'est fourni
   useEffect(() => {
-    if (rallyId) {
+    if (!rallyId) {
+      const fetchRallies = async () => {
+        const { data, error } = await supabase
+          .from('rallies')
+          .select('id, name')
+          .order('name', { ascending: true });
+          
+        if (error) {
+          console.error("Erreur lors du chargement des rallyes:", error);
+          toast.error("Erreur lors du chargement des rallyes");
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          setAvailableRallies(data);
+          if (!selectedRallyId) {
+            setSelectedRallyId(data[0].id);
+          }
+        }
+      };
+      
+      fetchRallies();
+    }
+  }, [rallyId, selectedRallyId]);
+
+  // Charger les épreuves quand le rally change
+  useEffect(() => {
+    if (selectedRallyId) {
       fetchStages();
     }
-  }, [rallyId, fetchStages]);
+  }, [selectedRallyId, fetchStages]);
+
+  const handleRallyChange = (rallyId: string) => {
+    setSelectedRallyId(rallyId);
+  };
 
   const handleAddStage = () => {
     setEditingStage(null);
@@ -59,11 +92,22 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
 
   const handleSaveStage = async (stageData: any) => {
     try {
+      // S'assurer que le rally_id est défini
+      if (!selectedRallyId) {
+        toast.error("Aucun rallye sélectionné");
+        return;
+      }
+      
+      const dataWithRallyId = {
+        ...stageData,
+        rally_id: selectedRallyId
+      };
+      
       if (editingStage) {
-        await updateStage(editingStage.id, stageData);
+        await updateStage(editingStage.id, dataWithRallyId);
         toast.success("Épreuve mise à jour avec succès");
       } else {
-        await createStage(stageData);
+        await createStage(dataWithRallyId);
         toast.success("Épreuve créée avec succès");
       }
       setIsModalOpen(false);
@@ -77,9 +121,28 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Gestion des Épreuves</h2>
+        
+        {!rallyId && availableRallies.length > 0 && (
+          <div className="flex items-center space-x-2">
+            <span>Rallye :</span>
+            <select 
+              className="border rounded px-2 py-1"
+              value={selectedRallyId}
+              onChange={(e) => handleRallyChange(e.target.value)}
+            >
+              {availableRallies.map((rally) => (
+                <option key={rally.id} value={rally.id}>
+                  {rally.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
         <Button
           onClick={handleAddStage}
           className="bg-rally-red hover:bg-red-700 flex items-center gap-2"
+          disabled={!selectedRallyId}
         >
           <Plus size={18} />
           Ajouter une épreuve
@@ -103,7 +166,7 @@ export const StageManager = ({ rallyId }: StageManagerProps) => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveStage}
         stage={editingStage}
-        rallyId={rallyId || ""}
+        rallyId={selectedRallyId || ""}
       />
     </div>
   );

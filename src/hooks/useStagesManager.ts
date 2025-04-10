@@ -49,10 +49,17 @@ export const useStagesManager = (rallyId?: string) => {
   }, [rallyId]);
 
   const createStage = async (stageData: Omit<Stage, 'id'>) => {
+    if (!stageData.rally_id) {
+      console.error("Erreur: rally_id manquant dans les données de l'épreuve");
+      throw new Error("rally_id est requis pour créer une épreuve");
+    }
+    
     try {
+      console.log("Données envoyées pour création:", stageData);
+      
       const { data, error } = await supabase
         .from('rally_stages')
-        .insert({ ...stageData, rally_id: rallyId })
+        .insert(stageData)
         .select()
         .single();
         
@@ -61,6 +68,7 @@ export const useStagesManager = (rallyId?: string) => {
         throw error;
       }
       
+      console.log("Épreuve créée avec succès:", data);
       setStages(prevStages => [...prevStages, data]);
       return data;
     } catch (error: any) {
@@ -71,6 +79,8 @@ export const useStagesManager = (rallyId?: string) => {
 
   const updateStage = async (stageId: string, stageData: Partial<Stage>) => {
     try {
+      console.log("Mise à jour de l'épreuve:", stageId, stageData);
+      
       const { data, error } = await supabase
         .from('rally_stages')
         .update(stageData)
@@ -83,6 +93,7 @@ export const useStagesManager = (rallyId?: string) => {
         throw error;
       }
       
+      console.log("Épreuve mise à jour avec succès:", data);
       setStages(prevStages => 
         prevStages.map(stage => 
           stage.id === stageId ? { ...stage, ...data } : stage
