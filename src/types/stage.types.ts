@@ -60,3 +60,13 @@ export interface TimingPoint {
   created_at: string;
   updated_at: string;
 }
+
+// Add TimingPointFormValues type from stageSchema.ts
+export interface TimingPointFormValues {
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  point_type: "start" | "split" | "finish";
+  order_index: number;
+}

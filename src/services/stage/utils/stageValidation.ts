@@ -1,43 +1,38 @@
 
-import { StageFormValues, TimingPointFormValues } from '@/types/stage.types';
+import { StageFormValues } from '@/types/stage.types';
+import { TimingPointFormValues } from '@/types/stage.types';
 
-// Fonctions d'aide pour la validation des données d'épreuve et de points de chronométrage
-export const stageValidation = {
-  // Valider les données d'une épreuve
-  validateStageData(data: Partial<StageFormValues>): { isValid: boolean; error?: string } {
-    if (!data.name || data.name.trim().length === 0) {
-      return { isValid: false, error: "Le nom de l'épreuve est requis" };
-    }
-    
-    if (!data.location || data.location.trim().length === 0) {
-      return { isValid: false, error: "L'emplacement de l'épreuve est requis" };
-    }
-    
-    if (data.distance === undefined || data.distance <= 0) {
-      return { isValid: false, error: "La distance doit être supérieure à 0" };
-    }
-    
-    return { isValid: true };
-  },
-  
-  // Valider les données d'un point de chronométrage
-  validateTimingPointData(data: Partial<TimingPointFormValues>): { isValid: boolean; error?: string } {
-    if (!data.name || data.name.trim().length === 0) {
-      return { isValid: false, error: "Le nom du point est requis" };
-    }
-    
-    if (data.latitude === undefined || data.longitude === undefined) {
-      return { isValid: false, error: "Les coordonnées du point sont requises" };
-    }
-    
-    if (data.point_type === undefined) {
-      return { isValid: false, error: "Le type de point est requis" };
-    }
-    
-    if (data.order_index === undefined || data.order_index < 0) {
-      return { isValid: false, error: "L'ordre du point est requis et doit être positif" };
-    }
-    
-    return { isValid: true };
+// Validation functions for stage data
+export const validateStageData = (data: StageFormValues): boolean => {
+  // Basic validation
+  if (!data.name || !data.location || !data.distance) {
+    return false;
   }
+  
+  // Distance must be greater than 0
+  if (data.distance <= 0) {
+    return false;
+  }
+  
+  return true;
+};
+
+// Validation functions for timing point data
+export const validateTimingPointData = (data: TimingPointFormValues): boolean => {
+  // Basic validation
+  if (!data.name || !data.latitude || !data.longitude) {
+    return false;
+  }
+  
+  // Order index must be a non-negative integer
+  if (data.order_index < 0 || !Number.isInteger(data.order_index)) {
+    return false;
+  }
+  
+  // Point type must be one of the allowed values
+  if (!['start', 'split', 'finish'].includes(data.point_type)) {
+    return false;
+  }
+  
+  return true;
 };
