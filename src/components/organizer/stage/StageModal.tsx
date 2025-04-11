@@ -18,6 +18,7 @@ interface Stage {
   route_type?: string;
   difficulty_level?: string;
   stage_order?: number;
+  rally_id: string;
 }
 
 interface StageModalProps {
@@ -33,24 +34,15 @@ export const StageModal = ({ isOpen, onClose, onSave, stage, rallyId }: StageMod
     formData, 
     errors, 
     handleInputChange, 
-    handleSelectChange, 
-    validateForm,
-    prepareDataForSubmission
+    handleSelectChange,
+    handleSubmit 
   } = useStageForm({ 
-    initialStage: stage, 
-    rallyId 
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
+    initialData: stage || undefined, 
+    defaultRallyId: rallyId,
+    onClose: () => {
+      onClose();
     }
-
-    const dataToSubmit = prepareDataForSubmission();
-    onSave(dataToSubmit);
-  };
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
