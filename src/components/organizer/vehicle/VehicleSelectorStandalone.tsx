@@ -153,7 +153,7 @@ export const VehicleSelectorStandalone: React.FC<VehicleSelectorStandaloneProps>
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="" disabled>
+                <SelectItem key="no-model-placeholder" value="no-model">
                   Sélectionnez d'abord une marque
                 </SelectItem>
               )}
@@ -198,7 +198,7 @@ export const VehicleSelectorStandalone: React.FC<VehicleSelectorStandaloneProps>
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="" disabled>
+                <SelectItem key="no-class-placeholder" value="no-class">
                   Sélectionnez d'abord un groupe
                 </SelectItem>
               )}

@@ -150,7 +150,7 @@ export const StageVehicleSelector = ({ form }: StageVehicleSelectorProps) => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem key="no-model-selector" value="no-model-selected">
                       Sélectionnez d'abord une marque
                     </SelectItem>
                   )}
@@ -216,7 +216,7 @@ export const StageVehicleSelector = ({ form }: StageVehicleSelectorProps) => {
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <SelectItem key="no-class-selector" value="no-class-selected">
                       Sélectionnez d'abord un groupe
                     </SelectItem>
                   )}

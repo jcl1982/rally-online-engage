@@ -139,7 +139,9 @@ export const VehicleSelectors: React.FC<VehicleSelectorsProps> = ({
                     {model}
                   </SelectItem>
                 )) : 
-                <SelectItem value="">Sélectionner d'abord une marque</SelectItem>
+                <SelectItem key="no-model" value="no-model-available">
+                  Sélectionner d'abord une marque
+                </SelectItem>
               }
             </SelectContent>
           </Select>
@@ -185,7 +187,9 @@ export const VehicleSelectors: React.FC<VehicleSelectorsProps> = ({
                     {carClass}
                   </SelectItem>
                 )) : 
-                <SelectItem value="">Sélectionner d'abord un groupe</SelectItem>
+                <SelectItem key="no-class" value="no-class-available">
+                  Sélectionner d'abord un groupe
+                </SelectItem>
               }
             </SelectContent>
           </Select>
