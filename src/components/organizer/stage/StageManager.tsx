@@ -8,15 +8,7 @@ import { StageModal } from "./StageModal";
 import { StageTable } from "./StageTable";
 import { useStagesManager } from "@/hooks/useStagesManager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface Stage {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-  status: string;
-  rally_id: string;
-}
+import { Stage } from "@/hooks/useStageForm";
 
 interface StageManagerProps {
   rallyId?: string;

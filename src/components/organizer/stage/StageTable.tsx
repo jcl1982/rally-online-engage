@@ -10,15 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-
-interface Stage {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-  status: string;
-  description?: string;
-}
+import { Stage } from "@/hooks/useStageForm";
 
 interface StageTableProps {
   stages: Stage[];
