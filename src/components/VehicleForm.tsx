@@ -1,66 +1,20 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { motion } from "framer-motion";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { VehicleSelectorStandalone } from "./organizer/vehicle/VehicleSelectorStandalone";
-
-const vehicleSchema = z.object({
-  make: z.string().min(1, "Marque obligatoire"),
-  model: z.string().min(1, "Modèle obligatoire"),
-  year: z.string().regex(/^\d{4}$/, "Année invalide (format: YYYY)"),
-  registrationNumber: z.string().min(1, "Numéro d'immatriculation obligatoire"),
-  chassisNumber: z.string().min(1, "Numéro de châssis obligatoire"),
-  engineNumber: z.string().min(1, "Numéro de moteur obligatoire"),
-  engineCapacity: z.string().min(1, "Cylindrée obligatoire"),
-  homologationNumber: z.string().min(1, "Numéro d'homologation obligatoire"),
-  technicalPassportNumber: z.string().min(1, "Numéro de passeport technique obligatoire"),
-  category: z.string().min(1, "Catégorie obligatoire"),
-  group: z.string().min(1, "Groupe obligatoire"),
-  class: z.string().min(1, "Classe obligatoire"),
-});
-
-type VehicleFormData = z.infer<typeof vehicleSchema>;
+import { VehicleTechnicalFields } from "./vehicle/VehicleTechnicalFields";
+import { VehicleClassificationFields } from "./vehicle/VehicleClassificationFields";
+import { vehicleSchema, VehicleFormData, defaultVehicleValues } from "@/schemas/vehicleSchema";
 
 interface VehicleFormProps {
   onSubmitStep: (data: VehicleFormData) => void;
   onPrevStep: () => void;
   initialData?: VehicleFormData;
 }
-
-const defaultValues: VehicleFormData = {
-  make: "",
-  model: "",
-  year: "",
-  registrationNumber: "",
-  chassisNumber: "",
-  engineNumber: "",
-  engineCapacity: "",
-  homologationNumber: "",
-  technicalPassportNumber: "",
-  category: "",
-  group: "",
-  class: "",
-};
 
 const VehicleForm = ({
   onSubmitStep,
@@ -69,7 +23,7 @@ const VehicleForm = ({
 }: VehicleFormProps) => {
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
-    defaultValues: initialData || defaultValues,
+    defaultValues: initialData || defaultVehicleValues,
   });
 
   const onSubmit = (data: VehicleFormData) => {
@@ -89,155 +43,25 @@ const VehicleForm = ({
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="rallyFormSection">
             <h3 className="rallyFormTitle">Informations du véhicule</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Remplacer les champs de marque et modèle par VehicleSelectorStandalone */}
-              <div className="md:col-span-2">
-                <VehicleSelectorStandalone
-                  initialMake={form.getValues("make")}
-                  initialModel={form.getValues("model")}
-                  initialGroup={form.getValues("group")}
-                  initialClass={form.getValues("class")}
-                  onMakeChange={(value) => form.setValue("make", value)}
-                  onModelChange={(value) => form.setValue("model", value)}
-                  onGroupChange={(value) => form.setValue("group", value)}
-                  onClassChange={(value) => form.setValue("class", value)}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Année</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: 2023" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="registrationNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Numéro d'immatriculation</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: AA-123-BB" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="chassisNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Numéro de châssis</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Numéro de châssis" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="engineNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Numéro de moteur</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Numéro de moteur" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="engineCapacity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cylindrée</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: 1600cc" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="homologationNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Numéro d'homologation</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Numéro d'homologation" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="technicalPassportNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Numéro de passeport technique</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Numéro de passeport technique"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="md:col-span-2">
+              <VehicleSelectorStandalone
+                initialMake={form.getValues("make")}
+                initialModel={form.getValues("model")}
+                initialGroup={form.getValues("group")}
+                initialClass={form.getValues("class")}
+                onMakeChange={(value) => form.setValue("make", value)}
+                onModelChange={(value) => form.setValue("model", value)}
+                onGroupChange={(value) => form.setValue("group", value)}
+                onClassChange={(value) => form.setValue("class", value)}
               />
             </div>
+            
+            <VehicleTechnicalFields form={form} />
           </div>
 
           <div className="rallyFormSection">
             <h3 className="rallyFormTitle">Classification</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catégorie</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="rally1">Rally1</SelectItem>
-                        <SelectItem value="rally2">Rally2</SelectItem>
-                        <SelectItem value="rally3">Rally3</SelectItem>
-                        <SelectItem value="rally4">Rally4</SelectItem>
-                        <SelectItem value="rally5">Rally5</SelectItem>
-                        <SelectItem value="rgt">RGT</SelectItem>
-                        <SelectItem value="historic">Historique</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Les champs de groupe et classe sont maintenant gérés par VehicleSelectorStandalone */}
-              {/* Ajoutons des champs cachés pour stocker les valeurs */}
-              <input type="hidden" {...form.register("group")} />
-              <input type="hidden" {...form.register("class")} />
-            </div>
+            <VehicleClassificationFields form={form} />
           </div>
 
           <div className="flex justify-between mt-6">
