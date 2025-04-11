@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { VehicleSelectorStandalone } from "./organizer/vehicle/VehicleSelectorStandalone";
 
 const vehicleSchema = z.object({
   make: z.string().min(1, "Marque obligatoire"),
@@ -89,32 +90,20 @@ const VehicleForm = ({
           <div className="rallyFormSection">
             <h3 className="rallyFormTitle">Informations du véhicule</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="make"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marque</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Citroën" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Modèle</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: C3 WRC" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Remplacer les champs de marque et modèle par VehicleSelectorStandalone */}
+              <div className="md:col-span-2">
+                <VehicleSelectorStandalone
+                  initialMake={form.getValues("make")}
+                  initialModel={form.getValues("model")}
+                  initialGroup={form.getValues("group")}
+                  initialClass={form.getValues("class")}
+                  onMakeChange={(value) => form.setValue("make", value)}
+                  onModelChange={(value) => form.setValue("model", value)}
+                  onGroupChange={(value) => form.setValue("group", value)}
+                  onClassChange={(value) => form.setValue("class", value)}
+                />
+              </div>
+
               <FormField
                 control={form.control}
                 name="year"
@@ -244,61 +233,10 @@ const VehicleForm = ({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="group"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Groupe</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="A">Groupe A</SelectItem>
-                        <SelectItem value="N">Groupe N</SelectItem>
-                        <SelectItem value="R">Groupe R</SelectItem>
-                        <SelectItem value="GT">Groupe GT</SelectItem>
-                        <SelectItem value="F2000">Groupe F2000</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="class"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Classe</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1">Classe 1</SelectItem>
-                        <SelectItem value="2">Classe 2</SelectItem>
-                        <SelectItem value="3">Classe 3</SelectItem>
-                        <SelectItem value="4">Classe 4</SelectItem>
-                        <SelectItem value="5">Classe 5</SelectItem>
-                        <SelectItem value="6">Classe 6</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Les champs de groupe et classe sont maintenant gérés par VehicleSelectorStandalone */}
+              {/* Ajoutons des champs cachés pour stocker les valeurs */}
+              <input type="hidden" {...form.register("group")} />
+              <input type="hidden" {...form.register("class")} />
             </div>
           </div>
 
