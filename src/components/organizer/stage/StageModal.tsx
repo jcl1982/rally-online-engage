@@ -7,19 +7,7 @@ import { StageFormMetricsFields } from "./form/StageFormMetricsFields";
 import { StageFormSelects } from "./form/StageFormSelects";
 import { StageFormDescription } from "./form/StageFormDescription";
 import { StageFormRalliesSelect } from "./form/StageFormRalliesSelect";
-
-interface Stage {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-  description?: string;
-  status: string;
-  route_type?: string;
-  difficulty_level?: string;
-  stage_order?: number;
-  rally_id: string;
-}
+import { Stage } from "@/hooks/useStageForm";
 
 interface StageModalProps {
   isOpen: boolean;
