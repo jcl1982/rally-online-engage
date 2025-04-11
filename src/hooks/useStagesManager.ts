@@ -2,20 +2,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface Stage {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-  status: string;
-  rally_id: string;
-  description?: string;
-  start_time?: string;
-  difficulty_level?: string;
-  route_type?: string;
-  stage_order?: number;
-}
+import { Stage } from "@/hooks/useStageForm";
 
 export const useStagesManager = (rallyId?: string) => {
   const [stages, setStages] = useState<Stage[]>([]);
@@ -39,7 +26,13 @@ export const useStagesManager = (rallyId?: string) => {
         throw error;
       }
       
-      setStages(data || []);
+      // Ensure the status field conforms to the expected type
+      const typedStages = data?.map(stage => ({
+        ...stage,
+        status: stage.status as "active" | "planned" | "cancelled" | "completed"
+      })) || [];
+      
+      setStages(typedStages);
     } catch (error: any) {
       console.error("Erreur complète:", error);
       toast.error("Erreur lors du chargement des épreuves");
@@ -69,7 +62,7 @@ export const useStagesManager = (rallyId?: string) => {
       }
       
       console.log("Épreuve créée avec succès:", data);
-      setStages(prevStages => [...prevStages, data]);
+      setStages(prevStages => [...prevStages, data as Stage]);
       return data;
     } catch (error: any) {
       console.error("Erreur complète:", error);
@@ -96,7 +89,7 @@ export const useStagesManager = (rallyId?: string) => {
       console.log("Épreuve mise à jour avec succès:", data);
       setStages(prevStages => 
         prevStages.map(stage => 
-          stage.id === stageId ? { ...stage, ...data } : stage
+          stage.id === stageId ? { ...stage, ...data } as Stage : stage
         )
       );
       return data;
